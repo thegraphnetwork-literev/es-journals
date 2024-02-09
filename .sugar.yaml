@@ -1,0 +1,14 @@
+version: 1.0
+compose-app: docker compose
+# env-file: .env
+defaults:
+  group: dev
+  project-name: rxiv-rest
+groups:
+  dev:
+    compose-path: containers/compose.yaml
+    services:
+      default: es,app
+      available:
+        - name: es
+        - name: app

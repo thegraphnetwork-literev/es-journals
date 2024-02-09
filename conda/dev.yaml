@@ -1,0 +1,11 @@
+name: rxiv-rest-api
+channels:
+  - nodefaults
+  - conda-forge
+dependencies:
+  - nodejs  # used by semantic-release
+  - python >=3.8.1,<4
+  - pip
+  - poetry
+  - r-base
+  - shellcheck

@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  es:
+    hostname: es
+    container_name: es
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    user: "1000:1000"  # Set the UID:GID to run the container
+    environment:
+      - discovery.type=single-node
+      - node.name=es
+      - ELASTIC_PASSWORD=worksfine
+      - bootstrap.memory_lock=true
+      # - xpack.security.enabled=true
+      # - xpack.security.http.ssl.enabled=true
+      # - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/es/elastic-certificates.key
+      # - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certs/es/elastic-certificates.crt
+      # - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/ca/ca.crt
+    ports:
+      - 9200:9200
+    expose:
+      - 9200
+    networks:
+      - elastic
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -k https://localhost:9200 | grep -q 'missing authentication credentials'"]
+
+  app:
+    build:
+      context: ..
+      dockerfile: containers/Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - es
+    networks:
+      - elastic
+
+networks:
+  elastic:
+    driver: bridge
