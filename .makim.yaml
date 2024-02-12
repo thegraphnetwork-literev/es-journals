@@ -8,6 +8,49 @@ groups:
           mkdir -p containers/esconfig/certs
           docker cp es:/usr/share/elasticsearch/config/certs/http_ca.crt ./containers/esconfig/certs/
           curl --cacert ./containers/esconfig/certs/http_ca.crt -u elastic:worksfine https://es:9200/
+
+  scheduler:
+    targets:
+      download-biorxiv-medrxiv:
+        help: |
+          Download data from BioRxiv/MedRxiv API within a specified date range.  
+        args:
+          server:
+            help: Specify the server to download (e.g., 'biorxiv' or 'medrxiv')
+            type: string
+            required: true
+          begin:
+            help: Specify the start date in YYYY-MM-DD format
+            type: string
+            required: true
+          end:
+            help: Specify the end date in YYYY-MM-DD format
+            type: string
+            required: true
+          target:
+            help: Path to save the JSON file (e.g., 'data/')
+            type: string
+            required: true
+        shell: Rscript
+        run: |
+          library(medrxivr)
+          library(jsonlite)
+
+          print("Starting download data from: {{ args.server }}")
+
+          biorxiv_data <- mx_api_content(
+            server = '{{ args.server }}',
+            from_date = "{{ args.begin }}",
+            to_date = "{{ args.end }}"
+          )
+
+          json_data <- toJSON(biorxiv_data, pretty = TRUE)
+
+          json_file_path <- "{{ args.target }}{{ args.server }}_{{ args.begin }}_{{ args.end }}.json"
+          writeLines(json_data, json_file_path)
+
+          cat("Data exported to:", json_file_path, "\n")
+
   clean:
     targets:
       all:

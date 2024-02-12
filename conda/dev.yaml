@@ -7,5 +7,10 @@ dependencies:
   - python >=3.8.1,<4
   - pip
   - poetry
+  - r-medrxivr
   - r-base
   - shellcheck
+  - pip:
+    - makim
+    - containers-sugar
+  
