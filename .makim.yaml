@@ -52,7 +52,7 @@ groups:
           json_file_path <- "{{ args.target }}{{ args.server }}_{{ args.begin }}_{{ args.end }}.json"
           writeLines(json_data, json_file_path)
 
-          cat("Data exported to:", json_file_path, "\n")
+          cat("Data object stored to:", "{{ args.server }}", "json file \n")
 
   clean:
     targets:
