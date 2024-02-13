@@ -19,7 +19,7 @@ This application is designed to fetch the latest papers from the BioRxiv and Med
 
 Run the following command to fetch the latest papers from the desired server:
    ```
-   ./fetch_rxiv_data.sh <server_name>
+   ./src/fetch_rxivx_data.sh <server_name>
    ```
    Replace `<server_name>` with either "biorxiv" or "medrxiv" based on the server you want to fetch the papers from.
 
