@@ -22,14 +22,11 @@ groups:
           begin:
             help: Specify the start date in YYYY-MM-DD format
             type: string
-            # default: {{ start_date }}
             required: true
           end:
             help: Specify the end date in YYYY-MM-DD format
             type: string
-            # default: {{ current_date }}
             required: true
-
           target:
             help: Path to save the JSON file (e.g., 'data/')
             type: string
