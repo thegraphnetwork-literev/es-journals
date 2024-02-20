@@ -7,13 +7,12 @@ from typing import Optional
 import typer
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
-from loguru import logger  # Import loguru's logger
+from loguru import logger
 
 load_dotenv()
 
 app = typer.Typer()
 
-# Configure loguru logger
 log_filename = f"/tmp/elasticrxivx_{time.strftime('%Y%m%d-%H%M%S')}.log"
 logger.add(log_filename, rotation="10 MB", retention="10 days", level="INFO")
 

@@ -6,7 +6,6 @@ from loguru import logger
 
 app = typer.Typer()
 
-# Configure loguru logger
 logger.add("/tmp/merge_arxiv_data_{time}.log", rotation="10 MB", level="INFO")
 
 

@@ -2,13 +2,10 @@
 
 set -e
 
-# Activate conda environment
 source /opt/miniforge/bin/activate rxiv-rest-api
 
-# Capture the current working directory
 path_root=$(pwd)
 
-# Get the server name from the command-line argument
 server=$1
 
 # Check if the server name was provided
