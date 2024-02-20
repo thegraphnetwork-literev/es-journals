@@ -3,6 +3,7 @@ channels:
   - nodefaults
   - conda-forge
 dependencies:
+  - loguru
   - nodejs  # used by semantic-release
   - python >=3.8.1,<4
   - pip
@@ -10,6 +11,7 @@ dependencies:
   - r-medrxivr
   - r-base
   - shellcheck
+  - typer
   - pip:
     - makim
     - containers-sugar
