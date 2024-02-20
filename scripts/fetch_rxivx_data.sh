@@ -3,8 +3,9 @@
 set -e
 
 # Activate conda environment
-eval "$(conda shell.bash hook)"
-conda activate rxiv-rest-api-server
+# eval "$(conda shell.bash hook)"
+# conda activate rxiv-rest-api-server
+source /opt/miniforge/bin/activate rxiv-rest-api
 
 # Capture the current working directory
 path_root=$(pwd)
