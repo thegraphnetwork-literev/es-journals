@@ -1,13 +1,12 @@
 version: 1.0
 groups:
   develop:
+    env-file: .env
     targets:
-      gen-certs:
+      test-certs:
         help: Generate and copy certs
         run: |
-          mkdir -p containers/esconfig/certs
-          docker cp es:/usr/share/elasticsearch/config/certs/http_ca.crt ./containers/esconfig/certs/
-          curl --cacert ./containers/esconfig/certs/http_ca.crt -u elastic:worksfine https://es:9200/
+          curl -k -u elastic:mic4oNneBRwb2J9iyQLvBbIF82Q2-K12zvhIbsMk3T4 "https://es.literev.com:9200/_cluster/health"
 
   scheduler:
     targets:

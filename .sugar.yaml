@@ -2,13 +2,18 @@ version: 1.0
 compose-app: docker compose
 # env-file: .env
 defaults:
-  group: dev
+  group: prod
   project-name: rxiv-rest
 groups:
-  dev:
-    compose-path: containers/compose.yaml
+groups:
+  prod:
+    compose-path:
+      - containers/compose.nginx.yaml
+      - containers/compose.elasticsearch.yaml
+    env-file: ./.env
     services:
-      default: es,app
+      default: es01,nginx,certbot
       available:
-        - name: es
-        - name: app
+        - name: es01
+        - name: nginx
+        - name: certbot

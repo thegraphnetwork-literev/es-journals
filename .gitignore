@@ -100,3 +100,6 @@ ENV/
 
 # Containers
 containers/nginx/*
+
+# Databases
+**data/*
