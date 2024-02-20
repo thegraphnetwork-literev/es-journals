@@ -1,0 +1,16 @@
+FROM nginx
+
+RUN apt-get -qq update --yes \
+  && apt-get -qq install --yes --no-install-recommends
+
+RUN apt-get install --yes certbot python3-certbot-nginx
+
+ARG HOST_UID
+ARG HOST_GID
+
+RUN usermod -u ${HOST_UID} nginx \
+    && groupmod -g ${HOST_GID} nginx \
+    && echo "nginx:x:${HOST_UID}:${HOST_GID}:/var/cache/nginx/client_temp:/bin/bash" >> /etc/passwd
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
