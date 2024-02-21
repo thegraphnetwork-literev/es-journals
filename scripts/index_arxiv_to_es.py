@@ -13,8 +13,11 @@ load_dotenv()
 
 app = typer.Typer()
 
-log_filename = f"/tmp/elasticrxivx_{time.strftime('%Y%m%d-%H%M%S')}.log"
-logger.add(log_filename, rotation="10 MB", retention="10 days", level="INFO")
+
+index_name_placeholder = "index_name"
+log_filename = (
+    f"/tmp/elasticrxivx_{index_name_placeholder}_{time.strftime('%Y%m%d-%H%M%S')}.log"
+)
 
 ES_HOST = os.getenv("ES_HOST", "https://localhost:9200")
 ES_USERNAME = os.getenv("ES_USERNAME", "elastic")
@@ -80,6 +83,10 @@ def validate_index_name(index_name: str):
 
 @app.command()
 def main(index_name: str = typer.Argument(..., callback=validate_index_name)):
+    global log_filename
+    log_filename = log_filename.replace(index_name_placeholder, index_name)
+    logger.add(log_filename, rotation="10 MB", retention="10 days", level="INFO")
+
     logger.info("Script started.")
     start_time = time.time()
     logger.info(f"Starting indexing for {index_name}")
