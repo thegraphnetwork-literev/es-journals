@@ -9,7 +9,7 @@ services:
         HOST_UID: ${HOST_UID}
         HOST_GID: ${HOST_GID}
     env_file:
-      - ./.env
+      - ../.env
     container_name: nginx
     ports:
       - "80:80"
