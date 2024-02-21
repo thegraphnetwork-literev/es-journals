@@ -49,6 +49,23 @@ groups:
           writeLines(json_data, json_file_path)
 
           cat("Data object stored to:", "{{ args.server }}", "json file \n")
+  
+      setup-cron:
+        help: Setup cron jobs for the develop user
+        shell: bash
+        run: |
+          CRON_PATH="/opt/services/literev-elasticsearch/scripts/cronjobs"
+
+          # Check if cronjob file exists
+          if [ ! -f "$CRON_PATH" ]; then
+            echo "Cronjob file does not exist at $CRON_PATH. Please create it first."
+            exit 1
+          fi
+
+          # Add cron taks to develop user
+          crontab -u devops $CRON_PATH
+
+          echo "Cron jobs for LiteRev Elasticsearch have been set up successfully for user develop."
 
   clean:
     targets:
@@ -111,13 +128,6 @@ groups:
         dependencies:
           - target: tests.unit
           - target: tests.linter
-
-  package:
-    targets:
-      build:
-        help: "Build the package"
-        run: |
-          poetry build
 
   release:
     vars:
