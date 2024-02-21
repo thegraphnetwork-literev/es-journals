@@ -97,3 +97,9 @@ ENV/
 # IDE settings
 .vscode/
 .idea/
+
+# Containers
+containers/nginx/*
+
+# Databases
+**data/*

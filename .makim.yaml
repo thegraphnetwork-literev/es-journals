@@ -1,13 +1,72 @@
 version: 1.0
 groups:
   develop:
+    env-file: .env
     targets:
-      gen-certs:
+      test-certs:
         help: Generate and copy certs
         run: |
-          mkdir -p containers/esconfig/certs
-          docker cp es:/usr/share/elasticsearch/config/certs/http_ca.crt ./containers/esconfig/certs/
-          curl --cacert ./containers/esconfig/certs/http_ca.crt -u elastic:worksfine https://es:9200/
+          curl -k -u elastic:mic4oNneBRwb2J9iyQLvBbIF82Q2-K12zvhIbsMk3T4 "https://es.literev.com:9200/_cluster/health"
+
+  scheduler:
+    targets:
+      download-rxivr:
+        help: |
+          Download data from BioRxiv/MedRxiv API within a specified date range.  
+        args:
+          server:
+            help: Specify the server to download (e.g., 'biorxiv' or 'medrxiv')
+            type: string
+            required: true
+          begin:
+            help: Specify the start date in YYYY-MM-DD format
+            type: string
+            required: true
+          end:
+            help: Specify the end date in YYYY-MM-DD format
+            type: string
+            required: true
+          target:
+            help: Path to save the JSON file (e.g., 'data/')
+            type: string
+            required: true
+        shell: Rscript
+        run: |
+          library(medrxivr)
+          library(jsonlite)
+
+          print("Starting download data from: {{ args.server }}")
+
+          biorxiv_data <- mx_api_content(
+            server = '{{ args.server }}',
+            from_date = "{{ args.begin }}",
+            to_date = "{{ args.end }}"
+          )
+
+          json_data <- toJSON(biorxiv_data, pretty = TRUE)
+
+          json_file_path <- "{{ args.target }}{{ args.server }}_{{ args.begin }}_{{ args.end }}.json"
+          writeLines(json_data, json_file_path)
+
+          cat("Data object stored to:", "{{ args.server }}", "json file \n")
+  
+      setup-cron:
+        help: Setup cron jobs for the develop user
+        shell: bash
+        run: |
+          CRON_PATH="/opt/services/literev-elasticsearch/scripts/cronjobs"
+
+          # Check if cronjob file exists
+          if [ ! -f "$CRON_PATH" ]; then
+            echo "Cronjob file does not exist at $CRON_PATH. Please create it first."
+            exit 1
+          fi
+
+          # Add cron taks to develop user
+          crontab -u devops $CRON_PATH
+
+          echo "Cron jobs for LiteRev Elasticsearch have been set up successfully for user develop."
+
   clean:
     targets:
       all:
@@ -69,13 +128,6 @@ groups:
         dependencies:
           - target: tests.unit
           - target: tests.linter
-
-  package:
-    targets:
-      build:
-        help: "Build the package"
-        run: |
-          poetry build
 
   release:
     vars:
