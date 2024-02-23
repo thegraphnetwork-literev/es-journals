@@ -20,7 +20,6 @@ services:
       - cluster.initial_master_nodes=es01
       - discovery.seed_hosts=es01
       - ES_PASSWORD=${ES_PASSWORD}
-      - ELASTIC_PASSWORD=worksfine
       - bootstrap.memory_lock=true
       - "xpack.security.enabled=true"
       - "xpack.security.http.ssl.enabled=true"
