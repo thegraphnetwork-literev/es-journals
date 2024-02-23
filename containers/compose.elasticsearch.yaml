@@ -10,6 +10,7 @@ services:
       - type: bind
         source: ${NGINX_CONFIG}/certificates
         target: /usr/share/elasticsearch/config/certs
+      - ../containers/init-scripts:/usr/share/elasticsearch/init-scripts:ro
     ports:
       - "${ES_PORT}:9200"
     env_file: ../.env

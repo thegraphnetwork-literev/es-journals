@@ -3,6 +3,7 @@ import os
 import time
 from pathlib import Path
 from typing import Optional
+import hashlib
 
 import typer
 from dotenv import load_dotenv
@@ -30,10 +31,19 @@ def create_es_client(host: str, username: str, password: str) -> Elasticsearch:
     """
     return Elasticsearch([host], basic_auth=(username, password))
 
+def generate_document_id(doc: dict) -> str:
+    """
+    Generates a unique ID for a document.
+    This example uses a hash of the document's content, but you can modify
+    it to use other unique fields from your document.
+    """
+    doc_string = json.dumps(doc, sort_keys=True)
+    return hashlib.sha256(doc_string.encode('utf-8')).hexdigest()
 
 def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -> None:
     """
-    Reads data from a JSON file and indexes it into Elasticsearch.
+    Reads data from a JSON file and indexes it into Elasticsearch,
+    using a unique ID for each document to avoid duplicates.
     """
     try:
         with open(file_path, "r", encoding="utf-8") as file:
@@ -41,8 +51,9 @@ def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -
 
         successful_docs = 0
         for doc in data:
+            doc_id = generate_document_id(doc)  # Generate a unique ID for the document
             try:
-                res = es_client.index(index=index_name, document=doc)
+                res = es_client.index(index=index_name, id=doc_id, document=doc)
                 successful_docs += 1
             except Exception as doc_error:
                 logger.error(f"Failed to index document: {doc_error}")
@@ -52,7 +63,6 @@ def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -
         )
     except Exception as e:
         logger.error(f"Failed to index data for {index_name}: {e}")
-
 
 def find_arxiv_path(index_name: str) -> Optional[str]:
     """
