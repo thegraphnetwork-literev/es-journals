@@ -10,6 +10,7 @@ services:
       - type: bind
         source: ${NGINX_CONFIG}/certificates
         target: /usr/share/elasticsearch/config/certs
+      - ../containers/init-scripts:/usr/share/elasticsearch/init-scripts:ro
     ports:
       - "${ES_PORT}:9200"
     env_file: ../.env
@@ -19,6 +20,7 @@ services:
       - cluster.initial_master_nodes=es01
       - discovery.seed_hosts=es01
       - ES_PASSWORD=${ES_PASSWORD}
+      - ELASTIC_PASSWORD=worksfine
       - bootstrap.memory_lock=true
       - "xpack.security.enabled=true"
       - "xpack.security.http.ssl.enabled=true"
