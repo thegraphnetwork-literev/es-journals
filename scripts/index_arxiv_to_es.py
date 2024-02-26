@@ -63,8 +63,26 @@ def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -
 
 
 def find_arxiv_path(index_name: str) -> Path:
+    """
+    Finds the most recent JSON file path for the specified index name.
+
+    Parameters:
+        index_name (str): The name of the index (e.g., "biorxiv" or "medrxiv").
+
+    Returns:
+        Path: The Path object pointing to the most recent JSON file.
+    """
     base_dir = Path(__file__).resolve().parent.parent
-    return base_dir / f"data/rxivx/{index_name}/final/{index_name}_full_data.json"
+    pattern = f"data/rxivx/{index_name}/downloaded/{index_name}_*.json"
+    files = list(base_dir.glob(pattern))
+    if not files:
+        logger.error(f"No files found for pattern: {pattern}")
+        raise FileNotFoundError(f"No files found for pattern: {pattern}")
+    # Sort the files by modification time in descending order
+    files.sort(key=lambda x: x.stat().st_mtime, reverse=False)
+    # Return the most recent file
+    # breakpoint()
+    return files[0]
 
 
 def validate_index_name(index_name: str):
