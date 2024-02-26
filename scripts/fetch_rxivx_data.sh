@@ -20,8 +20,9 @@ if makim scheduler.download-rxivr --server "${server}" --begin "${latest_date}" 
     if python "${path_root}/scripts/merge_arxiv_data.py" "${path_root}/data/rxivx/${server}/final/${server}_full_data.json" "${path_root}/data/rxivx/${server}/downloaded/${output_filename}"; then
         echo "[INFO]: Merge in the full database completed successfully."
 
-        # If both download and merge were successful, consider handling of files as needed
-        echo "[INFO]: Handling of files post-merge can be placed here."
+        # If both download and merge were successful, delete the most recent file
+        echo "[INFO]: Deleting the most old file: ${most_recent_file}"
+        rm "${path_root}/data/rxivx/${server}/downloaded/${most_recent_file}"
     else
         echo "[ERROR]: Merge process failed."
         exit 1
