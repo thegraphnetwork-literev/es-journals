@@ -23,15 +23,62 @@ ES_PASSWORD = os.getenv("ES_PASSWORD", "")
 
 
 def create_es_client(host: str, username: str, password: str) -> Elasticsearch:
+    """
+    Create an Elasticsearch client using the provided credentials.
+
+    Parameters
+    ----------
+    host : str
+        The host URL of the Elasticsearch instance.
+    username : str
+        The username for Elasticsearch authentication.
+    password : str
+        The password for Elasticsearch authentication.
+
+    Returns
+    -------
+    Elasticsearch
+        An Elasticsearch client instance.
+    """
     return Elasticsearch([host], basic_auth=(username, password), verify_certs=False)
 
 
 def generate_document_id(doc: dict) -> str:
+    """
+    Generate a unique document ID based on the document's content.
+
+    Parameters
+    ----------
+    doc : dict
+        The document for which to generate an ID.
+
+    Returns
+    -------
+    str
+        A unique identifier for the document.
+    """
     doc_string = json.dumps(doc, sort_keys=True)
     return hashlib.sha256(doc_string.encode("utf-8")).hexdigest()
 
 
 def document_exists(es_client: Elasticsearch, index_name: str, doc_id: str) -> bool:
+    """
+    Check if a document exists in the specified index.
+
+    Parameters
+    ----------
+    es_client : Elasticsearch
+        The Elasticsearch client instance.
+    index_name : str
+        The name of the Elasticsearch index.
+    doc_id : str
+        The ID of the document to check.
+
+    Returns
+    -------
+    bool
+        True if the document exists, False otherwise.
+    """
     try:
         return es_client.exists(index=index_name, id=doc_id)
     except exceptions.NotFoundError:
@@ -39,6 +86,23 @@ def document_exists(es_client: Elasticsearch, index_name: str, doc_id: str) -> b
 
 
 def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -> None:
+    """
+    Index JSON data from a file into the specified Elasticsearch index.
+
+    Parameters
+    ----------
+    es_client : Elasticsearch
+        The Elasticsearch client instance.
+    file_path : str
+        The path to the JSON file containing the data to index.
+    index_name : str
+        The name of the Elasticsearch index.
+
+    Raises
+    ------
+    Exception
+        If the indexing process fails.
+    """
     try:
         with open(file_path, "r", encoding="utf-8") as file:
             data = json.load(file)
@@ -66,11 +130,20 @@ def find_arxiv_path(index_name: str) -> Path:
     """
     Finds the most recent JSON file path for the specified index name.
 
-    Parameters:
-        index_name (str): The name of the index (e.g., "biorxiv" or "medrxiv").
+    Parameters
+    ----------
+    index_name : str
+        The name of the index (e.g., "biorxiv" or "medrxiv").
 
-    Returns:
-        Path: The Path object pointing to the most recent JSON file.
+    Returns
+    -------
+    Path
+        The Path object pointing to the most recent JSON file.
+
+    Raises
+    ------
+    FileNotFoundError
+        If no files are found for the given pattern.
     """
     base_dir = Path(__file__).resolve().parent.parent
     pattern = f"data/rxivx/{index_name}/downloaded/{index_name}_*.json"
@@ -78,14 +151,29 @@ def find_arxiv_path(index_name: str) -> Path:
     if not files:
         logger.error(f"No files found for pattern: {pattern}")
         raise FileNotFoundError(f"No files found for pattern: {pattern}")
-    # Sort the files by modification time in descending order
     files.sort(key=lambda x: x.stat().st_mtime, reverse=False)
-    # Return the most recent file
-    # breakpoint()
     return files[0]
 
 
-def validate_index_name(index_name: str):
+def validate_index_name(index_name: str) -> str:
+    """
+    Validate the provided index name against known valid options.
+
+    Parameters
+    ----------
+    index_name : str
+        The index name to validate.
+
+    Returns
+    -------
+    str
+        The validated index name.
+
+    Raises
+    ------
+    typer.BadParameter
+        If the index name is not recognized as valid.
+    """
     valid_indices = ["biorxiv", "medrxiv"]
     if index_name not in valid_indices:
         raise typer.BadParameter(
@@ -96,6 +184,14 @@ def validate_index_name(index_name: str):
 
 @app.command()
 def main(index_name: str = typer.Argument(..., callback=validate_index_name)):
+    """
+    Main function to run the indexing process for a given index name.
+
+    Parameters
+    ----------
+    index_name : str
+        The index name to process.
+    """
     global log_filename
     log_filename = log_filename.replace(index_name_placeholder, index_name)
     logger.add(log_filename, rotation="10 MB", retention="10 days", level="INFO")
