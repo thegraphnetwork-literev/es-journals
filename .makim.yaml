@@ -8,6 +8,18 @@ groups:
         run: |
           curl -k -u elastic:mic4oNneBRwb2J9iyQLvBbIF82Q2-K12zvhIbsMk3T4 "https://es.literev.com:9200/_cluster/health"
 
+      count-docs-in-index:
+        help: |
+          Download data from BioRxiv/MedRxiv API within a specified date range.  
+        args:
+          index-name:
+            help: Specify the index name (e.g., 'biorxiv' or 'medrxiv')
+            type: string
+            required: true      
+        shell: bash
+        run: |
+          python scripts/es_index_doc_counter.py {{ args.index_name }}
+
   scheduler:
     targets:
       download-rxivr:

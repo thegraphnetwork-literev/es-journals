@@ -17,7 +17,7 @@ log_filename = (
     f"/tmp/elasticrxivx_{index_name_placeholder}_{time.strftime('%Y%m%d-%H%M%S')}.log"
 )
 
-ES_HOST = os.getenv("ES_HOST", "https://localhost:9200")
+ES_HOSTNAME = os.getenv("ES_HOSTNAME", "https://localhost:9200")
 ES_USERNAME = os.getenv("ES_USERNAME", "elastic")
 ES_PASSWORD = os.getenv("ES_PASSWORD", "")
 
@@ -101,7 +101,7 @@ def main(index_name: str = typer.Argument(..., callback=validate_index_name)):
     logger.add(log_filename, rotation="10 MB", retention="10 days", level="INFO")
 
     logger.info("Script started.")
-    es_client = create_es_client(ES_HOST, ES_USERNAME, ES_PASSWORD)
+    es_client = create_es_client(ES_HOSTNAME, ES_USERNAME, ES_PASSWORD)
     file_path = find_arxiv_path(index_name)
     index_json_data(es_client, file_path, index_name)
     logger.info(f"Completed indexing for {index_name}.")
