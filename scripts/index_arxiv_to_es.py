@@ -132,7 +132,7 @@ def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -
         logger.error(f"Failed to index data for {index_name}: {e}")
 
 
-def find_arxiv_path(index_name: str) -> Path:
+def find_rxiv_path(index_name: str) -> Path:
     """
     Finds the most recent JSON file path for the specified index name.
 
