@@ -2,10 +2,6 @@ SHELL=/bin/bash
 
 # m h  dom mon dow   commandid
 # “At 02:00.”
-0 2 * * * . ~/.bashrc && cd /opt/services/literev-elasticsearch/ && bash /opt/services/literev-elasticsearch/scripts/fetch_rxivx_data.sh medrxiv  >> /tmp/medrxiv_data.log 2>&1
+0 2 * * * . ~/.bashrc && cd /opt/services/literev-elasticsearch/ && bash /opt/services/literev-elasticsearch/scripts/fetch_rxivx_data.sh medrxiv  >> /tmp/medrxiv_cronjob.log 2>&1
 # “At 02:30.”
-30 2 * * * . ~/.bashrc && cd /opt/services/literev-elasticsearch/ && bash /opt/services/literev-elasticsearch/scripts/fetch_rxivx_data.sh biorxiv  >> /tmp/biorxiv_data.log 2>&1
-# “At 03:00.”
-0 3 * * * . ~/.bashrc && cd /opt/services/literev-elasticsearch/ && bash scripts/run_index_arxiv_to_es.sh medrxiv >> /tmp/cron_index_arxiv_to_es_medrxiv.log 2>&1
-# “At 03:30.”
-30 3 * * * . ~/.bashrc && cd /opt/services/literev-elasticsearch/ && bash scripts/run_index_arxiv_to_es.sh biorxiv >> /tmp/cron_run_index_arxiv_to_es_biorxiv.log 2>&1
+30 2 * * * . ~/.bashrc && cd /opt/services/literev-elasticsearch/ && bash /opt/services/literev-elasticsearch/scripts/fetch_rxivx_data.sh biorxiv  >> /tmp/biorxiv_cronjob.log 2>&1

@@ -4,13 +4,16 @@ services:
   es01:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
-      - type: volume
-        source: esdata01
-        target: /usr/share/elasticsearch/data
       - type: bind
         source: ${NGINX_CONFIG}/certificates
         target: /usr/share/elasticsearch/config/certs
-      - ../containers/init-scripts:/usr/share/elasticsearch/init-scripts:ro
+      - type: bind
+        source: ../containers/init-scripts
+        target: /usr/share/elasticsearch/init-scripts
+        read_only: true
+      - type: bind
+        source: ${ELASTIC_VOLUME}
+        target: /usr/share/elasticsearch/data
     ports:
       - "${ES_PORT}:9200"
     env_file: ../.env
@@ -32,18 +35,14 @@ services:
       - "xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/fullchain.pem"
       - "xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/chain.pem"
       - "xpack.security.transport.ssl.verification_mode=certificate"
-      - xpack.license.self_generated.type=${LICENSE}
+      - "xpack.license.self_generated.type=${LICENSE}"
     mem_limit: ${MEM_LIMIT}
     ulimits:
       memlock:
         soft: -1
         hard: -1
     healthcheck:
-      test: ["CMD-SHELL", "curl -s --cacert /usr/share/elasticsearch/config/certs/chain.pem https://localhost:9200 | grep -q 'missing authentication credentials'"]
+      test: ["CMD-SHELL", "curl -k -u elastic:${ES_PASSWORD} https://es.literev.com:9200/_cluster/health"]
       interval: 10s
       timeout: 10s
       retries: 120
-
-volumes:
-  esdata01:
-    driver: local
