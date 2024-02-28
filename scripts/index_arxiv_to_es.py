@@ -20,9 +20,12 @@ log_filename = (
 ES_HOSTNAME = os.getenv("ES_HOSTNAME", "https://localhost:9200")
 ES_USERNAME = os.getenv("ES_USERNAME", "elastic")
 ES_PASSWORD = os.getenv("ES_PASSWORD", "")
+ES_CERTIF = os.getenv("ES_CERTIF", "")
 
 
-def create_es_client(host: str, username: str, password: str) -> Elasticsearch:
+def create_es_client(
+    host: str, username: str, password: str, ca_certs: str
+) -> Elasticsearch:
     """
     Create an Elasticsearch client using the provided credentials.
 
@@ -35,12 +38,15 @@ def create_es_client(host: str, username: str, password: str) -> Elasticsearch:
     password : str
         The password for Elasticsearch authentication.
 
+    ca_certs : str
+        Path to a CA bundle to verify SSL certificates.
+
     Returns
     -------
     Elasticsearch
-        An Elasticsearch client instance.
+        An instance of Elasticsearch client configured with the given credentials.
     """
-    return Elasticsearch([host], basic_auth=(username, password), verify_certs=False)
+    return Elasticsearch([host], basic_auth=(username, password), ca_certs=ca_certs)
 
 
 def generate_document_id(doc: dict) -> str:
@@ -197,7 +203,8 @@ def main(index_name: str = typer.Argument(..., callback=validate_index_name)):
     logger.add(log_filename, rotation="10 MB", retention="10 days", level="INFO")
 
     logger.info("Script started.")
-    es_client = create_es_client(ES_HOSTNAME, ES_USERNAME, ES_PASSWORD)
+    es_client = create_es_client(ES_HOSTNAME, ES_USERNAME, ES_PASSWORD, ES_CERTIF)
+
     file_path = find_arxiv_path(index_name)
     index_json_data(es_client, file_path, index_name)
     logger.info(f"Completed indexing for {index_name}.")
