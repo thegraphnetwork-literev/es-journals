@@ -205,7 +205,7 @@ def main(index_name: str = typer.Argument(..., callback=validate_index_name)):
     logger.info("Script started.")
     es_client = create_es_client(ES_HOSTNAME, ES_USERNAME, ES_PASSWORD, ES_CERTIF)
 
-    file_path = find_arxiv_path(index_name)
+    file_path = find_rxiv_path(index_name)
     index_json_data(es_client, file_path, index_name)
     logger.info(f"Completed indexing for {index_name}.")
 

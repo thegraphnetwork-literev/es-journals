@@ -103,3 +103,4 @@ containers/nginx/*
 
 # Databases
 **data/*
+**containers/elasticsearch/**
