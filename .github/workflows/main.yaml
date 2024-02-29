@@ -1,6 +1,28 @@
 name: build
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  # Elasticsearch Configuration
+  STACK_VERSION: 8.12.0
+  CLUSTER_NAME: docker-cluster
+  MEM_LIMIT: 1073741824
+  LICENSE: basic
+  #
+  ES_PORT: 9200
+  ES_HOSTNAME: https://localhost:9200
+  ES_USERNAME: elastic
+  ES_PASSWORD: worksfine
+  ES_CERTIF: containers/esconfig/certs/http_ca.crt
+  # Host System Configuration
+  HOST_UID: 1000
+  HOST_GID: 1000
+  ELASTIC_VOLUME: ../containers/elasticsearch/data
+
 
 jobs:
   build:
@@ -20,22 +42,30 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         miniconda-version: "latest"
-        mamba-version: "1.*"
-        environment-file: conda/dev.yaml
+        mamba-version: "*"
+        environment-file: conda/base.yaml
         channels: conda-forge,nodefaults
         channel-priority: true
         activate-environment: rxiv-rest-api
         use-mamba: true
         miniforge-variant: Mambaforge
 
-
-    - name: Install dependencies
+    - name: Setup development environment for MedRxiv
       run: |
-        poetry install
+        makim develop.setup-dev-env --server-name medrxiv
 
-    - name: Run tests
+    - name: Start Elasticsearch and test certificates
       run: |
-        makim tests.unit
+        sugar ext start --group dev
+        makim develop.test-certs
+
+    - name: Fetch and process MedRxiv data
+      run: |       
+        bash scripts/fetch_rxivx_data.sh medrxiv
+
+    - name: Count documents in MedRxiv index
+      run: |       
+        makim develop.count-docs-index --index-name medrxiv
 
     - name: Run style checks
       run: |

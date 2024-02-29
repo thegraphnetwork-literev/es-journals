@@ -1,18 +1,18 @@
 version: 1.0
 groups:
   develop:
-    env-file: .env
     targets:
       test-certs:
+        env-file: .env
         help: Generate and copy certs
         run: |
           mkdir -p containers/esconfig/certs
-          docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt ./containers/esconfig/certs/
+          docker cp es:/usr/share/elasticsearch/config/certs/http_ca.crt ./containers/esconfig/certs/
           curl --cacert ./containers/esconfig/certs/http_ca.crt -u elastic:{{ env.ES_PASSWORD }} https://localhost:9200/
 
       count-docs-in-index:
         help: |
-          Download data from BioRxiv/MedRxiv API within a specified date range.  
+          Download data from BioRxiv/MedRxiv API within a specified date range.
         args:
           index-name:
             help: Specify the index name (e.g., 'biorxiv' or 'medrxiv')
@@ -21,6 +21,42 @@ groups:
         shell: bash
         run: |
           python scripts/es_index_doc_counter.py {{ args.index_name }}
+
+      setup-dev-env:
+        help: Setup development environment and prepare .env file if it doesn't exist.
+        args:
+          server-name:
+            help: Specify the server name to prepare environment for (e.g., 'biorxiv' or 'medrxiv').
+            type: string
+            required: true
+        shell: bash
+        run: |
+          set -e
+
+          index_data_dir="containers/elasticsearch/data"
+          mkdir -p "${index_data_dir}"
+
+          download_dir="data/rxivx/{{ args.server_name }}/downloaded"
+          mkdir -p "${download_dir}"
+
+          yesterday_date=$(date -d "yesterday" '+%Y-%m-%d')
+          current_date=$(date '+%Y-%m-%d')
+          output_filename="{{ args.server_name }}_${yesterday_date}_${current_date}.json"
+          touch "${download_dir}/${output_filename}"
+
+          echo "Prepared development environment for server: {{ args.server_name }}"
+
+          if [ -f ".env" ]; then
+              echo ".env file already exists. Exiting without modifying environment variables."
+          else
+              env_template="./env.tpl"
+              if [ ! -f "${env_template}" ]; then
+                  echo "The template file ${env_template} does not exist."
+                  exit 1
+              fi
+              envsubst < "${env_template}" > ".env"
+              echo "Environment variables prepared and saved to .env"
+          fi
 
   scheduler:
     targets:
