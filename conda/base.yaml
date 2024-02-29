@@ -3,7 +3,7 @@ channels:
   - nodefaults
   - conda-forge
 dependencies:
-  - elasricsearch
+  - elasticsearch
   - loguru
   - nodejs  # used by semantic-release
   - python >=3.8.1,<4

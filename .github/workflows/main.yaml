@@ -39,7 +39,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         miniconda-version: "latest"
         mamba-version: "*"
@@ -56,7 +56,7 @@ jobs:
 
     - name: Start Elasticsearch and test certificates
       run: |
-        sugar ext start --group dev
+        sugar ext start --group dev --options -d
         makim develop.test-certs
 
     - name: Fetch and process MedRxiv data
