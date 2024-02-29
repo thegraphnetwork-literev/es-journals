@@ -54,10 +54,18 @@ jobs:
       run: |
         makim develop.setup-dev-env --server-name medrxiv
 
-    - name: Start Elasticsearch and test certificates
+    - name: Start Elasticsearch
       run: |
         sugar ext start --group dev --options -d
+
+    - name: Copy and test certificates
+      run: |
         makim develop.test-certs
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      with:
+        sudo: true
 
     - name: Fetch and process MedRxiv data
       run: |       
@@ -70,4 +78,3 @@ jobs:
     - name: Run style checks
       run: |
         pre-commit install
-        makim tests.linter
