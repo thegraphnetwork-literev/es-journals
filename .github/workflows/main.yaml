@@ -58,9 +58,23 @@ jobs:
       run: |
         sugar ext start --group dev --options -d
 
+    - name: Check Container Health Status
+      id: check_health
+      run: |
+        status=$(docker inspect --format='{{.State.Health.Status}}' es)
+        if [ "$status" == "healthy" ]; then
+          echo "Container is healthy."
+          echo "CONTAINER_HEALTHY=true" >> $GITHUB_ENV
+        else
+          echo "Container is not healthy. Current status: $status"
+          echo "CONTAINER_HEALTHY=false" >> $GITHUB_ENV
+        fi
+
     - name: Copy and test certificates
+      if: ${{ env.CONTAINER_HEALTHY == 'true' }}
       run: |
         makim develop.test-certs
+
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
