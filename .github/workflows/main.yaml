@@ -23,7 +23,6 @@ env:
   HOST_GID: 1000
   ELASTIC_VOLUME: ../containers/elasticsearch/data
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -59,7 +58,7 @@ jobs:
         sugar ext start --group dev --options -d
 
     - name: Copy and test certificates
-      run: bash ci/healthcheck.sh es 80 && makim develop.test-certs
+      run: bash .github/ci/healthcheck.sh es 80 && makim develop.test-certs
 
     - name: Fetch and process MedRxiv data
       run: |       

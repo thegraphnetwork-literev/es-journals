@@ -44,11 +44,11 @@ groups:
           download_dir="data/rxivx/{{ args.server_name }}/downloaded"
           mkdir -p "${download_dir}"
 
-          yesterday_date=$(date -d "yesterday" '+%Y-%m-%d')
-          current_date=$(date '+%Y-%m-%d')
-          output_filename="{{ args.server_name }}_${yesterday_date}_${current_date}.json"
+          last_date=$(date -d "yesterday" '+%Y-%m-%d')
+          current_date=$(date -d "yesterday" '+%Y-%m-%d')
+          output_filename="{{ args.server_name }}_${last_date}_${current_date}.json"
           touch "${download_dir}/${output_filename}"
-
+          ls -la ${download_dir}/${output_filename}
           echo "Prepared development environment for server: {{ args.server_name }}"
 
           if [ -f ".env" ]; then
