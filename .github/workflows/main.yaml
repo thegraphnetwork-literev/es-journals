@@ -1,6 +1,27 @@
 name: build
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  # Elasticsearch Configuration
+  STACK_VERSION: 8.12.0
+  CLUSTER_NAME: docker-cluster
+  MEM_LIMIT: 1073741824
+  LICENSE: basic
+  #
+  ES_PORT: 9200
+  ES_HOSTNAME: https://localhost:9200
+  ES_USERNAME: elastic
+  ES_PASSWORD: worksfine
+  ES_CERTIF: containers/esconfig/certs/http_ca.crt
+  # Host System Configuration
+  HOST_UID: 1000
+  HOST_GID: 1000
+  ELASTIC_VOLUME: ../containers/elasticsearch/data
 
 jobs:
   build:
@@ -17,27 +38,34 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         miniconda-version: "latest"
-        mamba-version: "1.*"
-        environment-file: conda/dev.yaml
+        mamba-version: "*"
+        environment-file: conda/base.yaml
         channels: conda-forge,nodefaults
         channel-priority: true
         activate-environment: rxiv-rest-api
         use-mamba: true
         miniforge-variant: Mambaforge
 
-
-    - name: Install dependencies
+    - name: Setup development environment for Rxivs
       run: |
-        poetry install
+        for rxiv_name in biorxiv medrxiv; do
+            makim develop.setup-dev-env --server-name $rxiv_name
+        done
 
-    - name: Run tests
+    - name: Start Elasticsearch
       run: |
-        makim tests.unit
+        sugar ext start --group dev --options -d
 
-    - name: Run style checks
-      run: |
-        pre-commit install
-        makim tests.linter
+    - name: Copy and test certificates
+      run: bash .github/ci/healthcheck.sh es 80 && makim develop.test-certs
+
+    - name: Fetch and process MedRxiv data
+      run: |       
+        bash scripts/fetch_rxivx_data.sh medrxiv
+
+    - name: Count documents in MedRxiv index
+      run: |       
+        makim develop.count-docs-in-index --index-name medrxiv

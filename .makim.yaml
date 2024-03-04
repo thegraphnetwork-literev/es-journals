@@ -1,18 +1,23 @@
 version: 1.0
 groups:
   develop:
-    env-file: .env
     targets:
       test-certs:
+        env-file: .env
         help: Generate and copy certs
+        shell: bash
         run: |
           mkdir -p containers/esconfig/certs
-          docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt ./containers/esconfig/certs/
-          curl --cacert ./containers/esconfig/certs/http_ca.crt -u elastic:{{ env.ES_PASSWORD }} https://localhost:9200/
+          if docker cp es:/usr/share/elasticsearch/config/certs/http_ca.crt ./containers/esconfig/certs/; then
+            echo "Certificate copied successfully."
+            curl --cacert ./containers/esconfig/certs/http_ca.crt -u elastic:{{ env.ES_PASSWORD }} https://localhost:9200/
+          else
+            echo "Error: Could not find the certificate in the container."
+          fi
 
       count-docs-in-index:
         help: |
-          Download data from BioRxiv/MedRxiv API within a specified date range.  
+          Download data from BioRxiv/MedRxiv API within a specified date range.
         args:
           index-name:
             help: Specify the index name (e.g., 'biorxiv' or 'medrxiv')
@@ -21,6 +26,42 @@ groups:
         shell: bash
         run: |
           python scripts/es_index_doc_counter.py {{ args.index_name }}
+
+      setup-dev-env:
+        help: Setup development environment and prepare .env file if it doesn't exist.
+        args:
+          server-name:
+            help: Specify the server name to prepare environment for (e.g., 'biorxiv' or 'medrxiv').
+            type: string
+            required: true
+        shell: bash
+        run: |
+          set -e
+
+          index_data_dir="containers/elasticsearch/data"
+          mkdir -p "${index_data_dir}"
+
+          download_dir="data/rxivx/{{ args.server_name }}/downloaded"
+          mkdir -p "${download_dir}"
+
+          last_date=$(date -d "yesterday" '+%Y-%m-%d')
+          current_date=$(date -d "yesterday" '+%Y-%m-%d')
+          output_filename="{{ args.server_name }}_${last_date}_${current_date}.json"
+          touch "${download_dir}/${output_filename}"
+          ls -la ${download_dir}/${output_filename}
+          echo "Prepared development environment for server: {{ args.server_name }}"
+
+          if [ -f ".env" ]; then
+              echo ".env file already exists. Exiting without modifying environment variables."
+          else
+              env_template="./env.tpl"
+              if [ ! -f "${env_template}" ]; then
+                  echo "The template file ${env_template} does not exist."
+                  exit 1
+              fi
+              envsubst < "${env_template}" > ".env"
+              echo "Environment variables prepared and saved to .env"
+          fi
 
   scheduler:
     targets:
@@ -122,46 +163,3 @@ groups:
         run: |
           pre-commit install
           pre-commit run --all-files --verbose
-
-      unit:
-        help: run tests
-        args:
-          path:
-            help: Specify the location of the tests
-            type: string
-            default: ""
-          params:
-            help: Specify parameters to be used for tests
-            type: string
-            default: "-vv"
-        run: |
-          pytest {{ args.path }} {{ args.params }}
-
-      ci:
-        help: run the sames tests executed on CI
-        dependencies:
-          - target: tests.unit
-          - target: tests.linter
-
-  release:
-    vars:
-      app: |
-        npx --yes \
-        -p semantic-release \
-        -p "@semantic-release/commit-analyzer" \
-        -p "@semantic-release/release-notes-generator" \
-        -p "@semantic-release/changelog" \
-        -p "@semantic-release/exec" \
-        -p "@semantic-release/github" \
-        -p "@semantic-release/git" \
-        -p "@google/semantic-release-replace-plugin" \
-        semantic-release
-
-    targets:
-      ci:
-        help: run semantic release on CI
-        run: {{ vars.app }} --ci
-
-      dry:
-        help: run semantic release in dry-run mode
-        run: {{ vars.app }} --dry-run

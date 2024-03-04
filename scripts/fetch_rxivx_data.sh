@@ -2,8 +2,18 @@
 
 set -e
 
+
+# Find the path to the Conda executable
+conda_path=$(which conda)
+
+if [ -z "$conda_path" ]; then
+    echo "Conda executable not found. Please ensure Conda is installed and added to your PATH."
+    exit 1
+fi
+
 # Activate the Python environment
-source /opt/miniforge/bin/activate rxiv-rest-api
+activate_path="$(dirname "$(dirname "$conda_path")")/bin/activate"
+source "$activate_path" rxiv-rest-api
 
 # Get the current working directory
 path_root=$(pwd)
@@ -44,13 +54,11 @@ if makim scheduler.download-rxivr --server "${server}" --begin "${latest_date}" 
     echo "[SUCCESS]: Download completed successfully for ${server}."
 
     # Proceed with the indexing process
-    echo "[INFO]: Starting the indexing process for ${server}..."
     if python "${path_root}/scripts/index_arxiv_to_es.py" "${server}"; then
-        echo "[SUCCESS]: Indexing completed successfully for ${server}."
 
         # Delete the oldest file after successful download and index
         echo "[INFO]: Deleting the oldest file: $(basename "${most_recent_file}")"
-        rm -f "${most_recent_file}"
+        # rm -f "${most_recent_file}"
     else
         echo "[ERROR]: Indexing process failed for ${server}."
         exit 1

@@ -13,19 +13,14 @@ load_dotenv()
 app = typer.Typer()
 
 index_name_placeholder = "index_name"
-log_filename = (
-    f"/tmp/elasticrxivx_{index_name_placeholder}_{time.strftime('%Y%m%d-%H%M%S')}.log"
-)
+log_filename = f"/tmp/elasticrxivx_{index_name_placeholder}_{time.strftime('%Y%m%d-%H%M%S')}.log"
 
 ES_HOSTNAME = os.getenv("ES_HOSTNAME", "https://localhost:9200")
 ES_USERNAME = os.getenv("ES_USERNAME", "elastic")
 ES_PASSWORD = os.getenv("ES_PASSWORD", "")
 ES_CERTIF = os.getenv("ES_CERTIF", "")
 
-
-def create_es_client(
-    host: str, username: str, password: str, ca_certs: str
-) -> Elasticsearch:
+def create_es_client(host: str, username: str, password: str, ca_certs: str) -> Elasticsearch:
     """
     Create an Elasticsearch client using the provided credentials.
 
@@ -37,7 +32,6 @@ def create_es_client(
         The username for Elasticsearch authentication.
     password : str
         The password for Elasticsearch authentication.
-
     ca_certs : str
         Path to a CA bundle to verify SSL certificates.
 
@@ -47,7 +41,6 @@ def create_es_client(
         An instance of Elasticsearch client configured with the given credentials.
     """
     return Elasticsearch([host], basic_auth=(username, password), ca_certs=ca_certs)
-
 
 def generate_document_id(doc: dict) -> str:
     """
@@ -64,8 +57,7 @@ def generate_document_id(doc: dict) -> str:
         A unique identifier for the document.
     """
     doc_string = json.dumps(doc, sort_keys=True)
-    return hashlib.sha256(doc_string.encode("utf-8")).hexdigest()
-
+    return hashlib.sha256(doc_string.encode('utf-8')).hexdigest()
 
 def document_exists(es_client: Elasticsearch, index_name: str, doc_id: str) -> bool:
     """
@@ -90,7 +82,6 @@ def document_exists(es_client: Elasticsearch, index_name: str, doc_id: str) -> b
     except exceptions.NotFoundError:
         return False
 
-
 def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -> None:
     """
     Index JSON data from a file into the specified Elasticsearch index.
@@ -110,27 +101,25 @@ def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -
         If the indexing process fails.
     """
     try:
-        with open(file_path, "r", encoding="utf-8") as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
 
-        successful_docs = 0
+        successful_docs, skipped_docs = 0, 0
         for doc in data:
             doc_id = generate_document_id(doc)
             if not document_exists(es_client, index_name, doc_id):
-                try:
-                    res = es_client.index(index=index_name, id=doc_id, document=doc)
-                    successful_docs += 1
-                except Exception as doc_error:
-                    logger.error(f"Failed to index document: {doc_error}")
+                es_client.index(index=index_name, id=doc_id, document=doc)
+                successful_docs += 1
             else:
                 logger.info(f"Document with ID {doc_id} already exists. Skipping.")
-
-        logger.info(
-            f"Total new documents indexed successfully: {successful_docs}/{len(data)}"
-        )
+                skipped_docs += 1
+        logger.info(f"Indexing Summary: {successful_docs} new, {skipped_docs} skipped.")
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse JSON data from {file_path}: {e}")
+        raise Exception(f"Failed to parse JSON data: {e}")
     except Exception as e:
         logger.error(f"Failed to index data for {index_name}: {e}")
-
+        raise Exception(f"Failed to index data for {index_name}: {e}")
 
 def find_rxiv_path(index_name: str) -> Path:
     """
@@ -155,11 +144,9 @@ def find_rxiv_path(index_name: str) -> Path:
     pattern = f"data/rxivx/{index_name}/downloaded/{index_name}_*.json"
     files = list(base_dir.glob(pattern))
     if not files:
-        logger.error(f"No files found for pattern: {pattern}")
         raise FileNotFoundError(f"No files found for pattern: {pattern}")
-    files.sort(key=lambda x: x.stat().st_mtime, reverse=False)
-    return files[0]
-
+    most_recent_file = max(files, key=os.path.getmtime)
+    return most_recent_file
 
 def validate_index_name(index_name: str) -> str:
     """
@@ -182,11 +169,8 @@ def validate_index_name(index_name: str) -> str:
     """
     valid_indices = ["biorxiv", "medrxiv"]
     if index_name not in valid_indices:
-        raise typer.BadParameter(
-            f"Invalid index name: {index_name}. Valid options are 'biorxiv' or 'medrxiv'."
-        )
+        raise typer.BadParameter("Invalid index name: {index_name}. Valid options are 'biorxiv' or 'medrxiv'.")
     return index_name
-
 
 @app.command()
 def main(index_name: str = typer.Argument(..., callback=validate_index_name)):
@@ -202,13 +186,15 @@ def main(index_name: str = typer.Argument(..., callback=validate_index_name)):
     log_filename = log_filename.replace(index_name_placeholder, index_name)
     logger.add(log_filename, rotation="10 MB", retention="10 days", level="INFO")
 
-    logger.info("Script started.")
+    logger.info(f"Starting the indexing process for {index_name}...")
     es_client = create_es_client(ES_HOSTNAME, ES_USERNAME, ES_PASSWORD, ES_CERTIF)
-
     file_path = find_rxiv_path(index_name)
-    index_json_data(es_client, file_path, index_name)
-    logger.info(f"Completed indexing for {index_name}.")
 
+    try:
+        index_json_data(es_client, str(file_path), index_name)
+        logger.info(f"Completed indexing for {index_name}.")
+    except Exception as e:
+        logger.error(f"Indexing process failed for {index_name}: {e}")
 
 if __name__ == "__main__":
     app()

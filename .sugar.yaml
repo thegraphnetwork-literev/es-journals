@@ -5,7 +5,6 @@ defaults:
   group: prod
   project-name: rxiv-rest
 groups:
-groups:
   prod:
     compose-path:
       - containers/compose.nginx.yaml
@@ -17,3 +16,11 @@ groups:
         - name: es01
         - name: nginx
         - name: certbot
+  dev:
+    compose-path:
+      - containers/compose.elasticsearch.dev.yaml
+    env-file: ./.env
+    services:
+      default: es
+      available:
+        - name: es
