@@ -32,7 +32,6 @@ def create_es_client(host: str, username: str, password: str, ca_certs: str) -> 
         The username for Elasticsearch authentication.
     password : str
         The password for Elasticsearch authentication.
-
     ca_certs : str
         Path to a CA bundle to verify SSL certificates.
 
@@ -109,7 +108,7 @@ def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -
         for doc in data:
             doc_id = generate_document_id(doc)
             if not document_exists(es_client, index_name, doc_id):
-                res = es_client.index(index=index_name, id=doc_id, document=doc)
+                es_client.index(index=index_name, id=doc_id, document=doc)
                 successful_docs += 1
             else:
                 logger.info(f"Document with ID {doc_id} already exists. Skipping.")
@@ -117,10 +116,10 @@ def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -
         logger.info(f"Indexing Summary: {successful_docs} new, {skipped_docs} skipped.")
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse JSON data from {file_path}: {e}")
-        raise
+        raise Exception(f"Failed to parse JSON data: {e}")
     except Exception as e:
         logger.error(f"Failed to index data for {index_name}: {e}")
-        raise
+        raise Exception(f"Failed to index data for {index_name}: {e}")
 
 def find_rxiv_path(index_name: str) -> Path:
     """
@@ -170,7 +169,7 @@ def validate_index_name(index_name: str) -> str:
     """
     valid_indices = ["biorxiv", "medrxiv"]
     if index_name not in valid_indices:
-        raise typer.BadParameter("Invalid index name.")
+        raise typer.BadParameter("Invalid index name: {index_name}. Valid options are 'biorxiv' or 'medrxiv'.")
     return index_name
 
 @app.command()
@@ -187,7 +186,7 @@ def main(index_name: str = typer.Argument(..., callback=validate_index_name)):
     log_filename = log_filename.replace(index_name_placeholder, index_name)
     logger.add(log_filename, rotation="10 MB", retention="10 days", level="INFO")
 
-    logger.info("Starting the indexing process for medrxiv....")
+    logger.info(f"Starting the indexing process for {index_name}...")
     es_client = create_es_client(ES_HOSTNAME, ES_USERNAME, ES_PASSWORD, ES_CERTIF)
     file_path = find_rxiv_path(index_name)
 

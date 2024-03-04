@@ -49,9 +49,11 @@ jobs:
         use-mamba: true
         miniforge-variant: Mambaforge
 
-    - name: Setup development environment for MedRxiv
+    - name: Setup development environment for Rxivs
       run: |
-        makim develop.setup-dev-env --server-name medrxiv
+        for rxiv_name in biorxiv medrxiv; do
+            makim develop.setup-dev-env --server-name $rxiv_name
+        done
 
     - name: Start Elasticsearch
       run: |
