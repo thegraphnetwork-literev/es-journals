@@ -1,15 +1,15 @@
 version: 1.0
 compose-app: docker compose
-# env-file: .env
+env-file: .env
 defaults:
-  group: prod
-  project-name: rxiv-rest
+  group: {{ env.ENV }}
+  project-name: literev-es
 groups:
   prod:
     compose-path:
       - containers/compose.nginx.yaml
       - containers/compose.elasticsearch.yaml
-    env-file: ./.env
+    env-file: .env
     services:
       default: es01,nginx,certbot
       available:
@@ -19,7 +19,7 @@ groups:
   dev:
     compose-path:
       - containers/compose.elasticsearch.dev.yaml
-    env-file: ./.env
+    env-file: .env
     services:
       default: es
       available:
