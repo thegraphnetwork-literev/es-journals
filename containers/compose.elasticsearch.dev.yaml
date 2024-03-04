@@ -13,7 +13,6 @@ services:
       - node.name=es
       - ELASTIC_PASSWORD=${ES_PASSWORD}
       - bootstrap.memory_lock=true
-      - ES_JAVA_OPTS='-Xms2g -Xmx2g'
       - xpack.security.enabled=false
       - xpack.security.enrollment.enabled=false
     ports:

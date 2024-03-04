@@ -18,8 +18,7 @@ ES_CERTIF = os.getenv("ES_CERTIF", "")
 
 def test_connection():
     es = Elasticsearch([ES_HOST_URL], basic_auth=(ES_USERNAME, ES_PASSWORD), verify_certs=False)
-    breakpoint()
-    assert es
+    assert es.cluster.health().get("status") == "green"
 
 
 if __name__ == "__main__":

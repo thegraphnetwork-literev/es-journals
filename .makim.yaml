@@ -1,5 +1,20 @@
 version: 1.0
 groups:
+  containers:
+    targets:
+      get-ip:
+        help: Get the IP from a container-ID
+        args:
+          container-id:
+            help: The container-ID
+            type: string
+            required: true
+        shell: bash
+        run: |
+          docker inspect \
+            -f {% raw -%}"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}"{%- endraw %} \
+            {{ args.container_id }}
+
   develop:
     targets:
       test-certs:
@@ -54,7 +69,7 @@ groups:
           if [ -f ".env" ]; then
               echo ".env file already exists. Exiting without modifying environment variables."
           else
-              env_template="./env.tpl"
+              env_template="./.env.tpl"
               if [ ! -f "${env_template}" ]; then
                   echo "The template file ${env_template} does not exist."
                   exit 1
@@ -133,9 +148,9 @@ groups:
           find . -name '*.egg-info' -exec rm -fr {} +
           find . -name '*.egg' -exec rm -f {} +
           find . -name '*.pyc' -exec rm -f {} +
-          find . -name
-          find . -name '__pycache__' -exec rm -fr '*.pyo' -exec rm -f {} +
-          find . -name '*~' -exec rm -f {} +{} +
+          find . -name '*.pyo' -exec rm -f {} +
+          find . -name '__pycache__' -exec rm -fr {} +
+          find . -name '*~' -exec rm -f {} +
           rm -f .coverage
           rm -fr htmlcov/
           rm -fr .pytest_cache
