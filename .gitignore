@@ -112,3 +112,5 @@ containers/nginx/*
 *.pem
 containers/esconfig/
 
+# data
+*.json
