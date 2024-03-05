@@ -104,3 +104,13 @@ containers/nginx/*
 # Databases
 **data/*
 **containers/elasticsearch/**
+
+# env vars
+.env*
+
+# certificates
+*.pem
+containers/esconfig/
+
+# data
+*.json

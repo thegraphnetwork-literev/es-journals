@@ -1,4 +1,4 @@
-name: rxiv-rest-api
+name: es-journals
 channels:
   - nodefaults
   - conda-forge
