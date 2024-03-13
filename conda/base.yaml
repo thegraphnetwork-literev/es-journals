@@ -16,4 +16,6 @@ dependencies:
   - pip:
     - makim
     - containers-sugar
+    - pytest
+    - tqdm
   
