@@ -3,10 +3,13 @@ import os
 import time
 from pathlib import Path
 import hashlib
+
 import typer
+
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch, exceptions
 from loguru import logger
+from tqdm import tqdm
 
 load_dotenv()
 
@@ -104,19 +107,24 @@ def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -
         If the indexing process fails.
     """
     try:
+        logger.info(f"Starting indexing {file_path}")
+
         with open(file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
 
         successful_docs, skipped_docs = 0, 0
-        for doc in data:
-            doc_id = generate_document_id(doc)
-            if not document_exists(es_client, index_name, doc_id):
-                es_client.index(index=index_name, id=doc_id, document=doc)
-                successful_docs += 1
-            else:
-                logger.info(f"Document with ID {doc_id} already exists. Skipping.")
-                skipped_docs += 1
-        logger.info(f"Indexing Summary: {successful_docs} new, {skipped_docs} skipped.")
+        with tqdm(total=len(data)) as pbar:
+            for doc in data:
+                doc_id = generate_document_id(doc)
+                if not document_exists(es_client, index_name, doc_id):
+                    # logger.info(f"Indexing doc id {doc_id}")
+                    es_client.index(index=index_name, id=doc_id, document=doc)
+                    successful_docs += 1
+                else:
+                    skipped_docs += 1
+                
+                # logger.info(f"Indexing Summary: {successful_docs} new, {skipped_docs} skipped.")
+                pbar.update(1)
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse JSON data from {file_path}: {e}")
         raise Exception(f"Failed to parse JSON data: {e}")
@@ -146,9 +154,13 @@ def find_rxiv_path(index_name: str) -> Path:
     base_dir = Path(__file__).resolve().parent.parent
     pattern = f"data/rxivx/{index_name}/downloaded/{index_name}_*.json"
     files = list(base_dir.glob(pattern))
+
     if not files:
         raise FileNotFoundError(f"No files found for pattern: {pattern}")
+
     most_recent_file = max(files, key=os.path.getmtime)
+    logger.info(f"find_rxiv_path: Found {most_recent_file}")
+
     return most_recent_file
 
 def validate_index_name(index_name: str) -> str:
