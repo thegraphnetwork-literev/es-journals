@@ -22,4 +22,6 @@ def test_connection():
 
 
 if __name__ == "__main__":
+    print("test_connection ..", end="")
     test_connection()
+    print("OK")
