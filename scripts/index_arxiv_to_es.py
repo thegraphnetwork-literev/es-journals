@@ -40,7 +40,10 @@ def create_es_client(host: str, username: str, password: str, ca_certs: str) -> 
     Elasticsearch
         An instance of Elasticsearch client configured with the given credentials.
     """
-    return Elasticsearch([host], basic_auth=(username, password), ca_certs=ca_certs)
+    extra_args = {}
+    if ca_certs:
+        extra_args["ca_certs"] = ca_certs
+    return Elasticsearch([host], basic_auth=(username, password), **extra_args)
 
 def generate_document_id(doc: dict) -> str:
     """

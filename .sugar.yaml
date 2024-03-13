@@ -24,3 +24,12 @@ groups:
       default: es
       available:
         - name: es
+
+  staging:
+    compose-path:
+      - containers/compose.elasticsearch.staging.yaml
+    env-file: .env
+    services:
+      default: es
+      available:
+        - name: es
