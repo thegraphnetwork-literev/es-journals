@@ -1,4 +1,4 @@
-# rXiv REST API
+# es-journals
 
 A service for rXiv REST API, such as biorxiv and medrxiv
 
