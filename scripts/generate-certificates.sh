@@ -59,8 +59,8 @@ sugar run --service certbot --options --rm --entrypoint "\
 -subj '/CN=localhost'"
 echo
 
-echo "----> Starting nginx ..."
-    sugar up --services nginx --options --force-recreate -d
+echo "----> Starting services ..."
+    sugar up --options --force-recreate -d
 echo
 
 echo "----> Deleting dummy certificate for $DOMAINS ..."
