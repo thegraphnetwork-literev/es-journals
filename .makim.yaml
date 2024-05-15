@@ -51,26 +51,36 @@ groups:
             -f {% raw -%}"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}"{%- endraw %} \
             ${{ args.container_id }}
 
-  develop:
+  es:
     tasks:
-      test-certs:
+      gen-certificate:
         env-file: .env
-        help: Generate and copy certs
+        help: Generate certs
         shell: bash
         run: |
           mkdir -p "${DATA_DIR}/nginx/certbot_conf/live/${CERTBOT_DOMAIN}"
           mkdir -p ${{ env.DATA_DIR }}/esconfig/certs
 
-          sugar run --service es01 \
-            --cmd bash -c "elasticsearch-certutil ca --pem -v; unzip elastic-stack-ca.zip"
+          CMD="elasticsearch-certutil ca --pem -v"
+          CMD="$CMD; unzip elastic-stack-ca.zip -d config/certs"
 
+          sugar run --service es01 --cmd bash -c $CMD
+
+      test-certs:
+        env-file: .env
+        help: Generate and copy certs
+        shell: bash
+        dependencies:
+          - task: es.gen-certificate
+        run: |
           if docker cp es01:/usr/share/elasticsearch/ca/ca.crt ${{ env.DATA_DIR }}/esconfig/certs/; then
             echo "Certificate copied successfully."
             curl --cacert ${{ env.DATA_DIR }}/ca/ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
           else
             echo "Error: Could not find the certificate in the container."
           fi
-
+  develop:
+    tasks:
       count-docs-in-index:
         help: |
           Download data from BioRxiv/MedRxiv API within a specified date range.
