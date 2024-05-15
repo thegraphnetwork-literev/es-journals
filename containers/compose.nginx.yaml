@@ -15,7 +15,6 @@ services:
       - ../containers/nginx/data/config/prod:/etc/nginx/conf.d
       - certbot_conf:/etc/letsencrypt
       - certbot_www:/var/www/certbot
-      - static_root:/usr/share/nginx/html/${CERTBOT_DOMAIN}/static
     networks:
       - elastic
     # command: sets a loop which reloads nginx each 6 hours
