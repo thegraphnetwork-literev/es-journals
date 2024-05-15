@@ -12,8 +12,8 @@ templates = Environment(
 nginx_template = templates.get_template("nginx.template.conf")
 
 variables = {
-    "upstream_name": "webapp",
-    "upstream_service": "esjournals",
+    "upstream_name": "es",
+    "upstream_service": "es01",
     "upstream_port": os.environ.get("ES_PORT"),
     "certbot_root": "/var/www/certbot",
     "letsencrypt_root": "/etc/letsencrypt",

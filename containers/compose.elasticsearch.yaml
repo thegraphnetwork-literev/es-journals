@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   es01:
+    hostname: es01
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
       - type: bind
