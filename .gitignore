@@ -107,7 +107,6 @@ ENV/
 
 # certificates
 *.pem
-containers/esconfig/
 
 # data
 *.json

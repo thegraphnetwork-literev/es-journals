@@ -42,6 +42,8 @@ if [ -z "$CERTBOT_EMAIL" ]; then
     exit 1
 fi
 
+mkdir -p "${DATA_DIR}/nginx/certbot_conf/live/${CERTBOT_DOMAIN}"
+
 #
 DOMAINS=($CERTBOT_DOMAIN)
 RSA_KEY_SIZE=4096

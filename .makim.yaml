@@ -58,10 +58,10 @@ groups:
         help: Generate and copy certs
         shell: bash
         run: |
-          mkdir -p containers/esconfig/certs
-          if docker cp es:/usr/share/elasticsearch/config/certs/http_ca.crt ./containers/esconfig/certs/; then
+          mkdir -p ${{ env.DATA_DIR }}/esconfig/certs
+          if docker cp es:/usr/share/elasticsearch/config/certs/http_ca.crt ${{ env.DATA_DIR }}/esconfig/certs/; then
             echo "Certificate copied successfully."
-            curl --cacert ./containers/esconfig/certs/http_ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
+            curl --cacert ${{ env.DATA_DIR }}/esconfig/certs/http_ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
           else
             echo "Error: Could not find the certificate in the container."
           fi
