@@ -62,11 +62,11 @@ groups:
           mkdir -p ${{ env.DATA_DIR }}/esconfig/certs
 
           sugar run --service es01 \
-            --cmd bash -c "elasticsearch-certutil ca --pem -v; unzip /certs/bundle.zip -d config/certs/; ls config/certs/"
+            --cmd bash -c "elasticsearch-certutil ca --pem -v; unzip elastic-stack-ca.zip"
 
-          if docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt ${{ env.DATA_DIR }}/esconfig/certs/; then
+          if docker cp es01:/usr/share/elasticsearch/ca/ca.crt ${{ env.DATA_DIR }}/esconfig/certs/; then
             echo "Certificate copied successfully."
-            curl --cacert ${{ env.DATA_DIR }}/esconfig/certs/http_ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
+            curl --cacert ${{ env.DATA_DIR }}/ca/ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
           else
             echo "Error: Could not find the certificate in the container."
           fi
