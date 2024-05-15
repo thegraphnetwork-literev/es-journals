@@ -61,8 +61,8 @@ groups:
           mkdir -p "${DATA_DIR}/nginx/certbot_conf/live/${CERTBOT_DOMAIN}"
           mkdir -p ${{ env.DATA_DIR }}/esconfig/certs
 
-          CMD="elasticsearch-certutil ca --pem -v"
-          CMD="$CMD; unzip elastic-stack-ca.zip -d config/certs"
+          CMD="set -x; elasticsearch-certutil ca --pem -v"
+          CMD="$CMD; unzip elastic-stack-ca.zip -d config/certs; set +x;"
 
           sugar run --service es01 --cmd bash -c $CMD
 
