@@ -42,12 +42,16 @@ if [ -z "$CERTBOT_EMAIL" ]; then
     exit 1
 fi
 
-mkdir -p "${DATA_DIR}/nginx/certbot_conf/live/${CERTBOT_DOMAIN}"
+HOST_CERTBOT_CERTS_PATH="${HOST_CERTBOT_PATH_CONF}/live/${CERTBOT_DOMAIN}"
+
+mkdir -p "${HOST_CERTBOT_CERTS_PATH}"
 
 #
 DOMAINS=($CERTBOT_DOMAIN)
 RSA_KEY_SIZE=4096
 EMAIL=${CERTBOT_EMAIL}
+
+cp ${HOST_ELASTIC_CERTS}/ca/* "${HOST_CERTBOT_CERTS_PATH}"
 
 echo "----> Creating dummy certificate for $DOMAINS ..."
 path="/etc/letsencrypt/live/$DOMAINS"

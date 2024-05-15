@@ -6,15 +6,31 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
       - type: bind
-        source: ${DATA_DIR}/nginx/certbot_conf/live/${CERTBOT_DOMAIN}
+        source: ${HOST_CERTBOT_PATH_CONF}/live/${CERTBOT_DOMAIN}
         target: /usr/share/elasticsearch/config/certs
+        bind:
+          create_host_path: true
       - type: bind
         source: ../containers/init-scripts
         target: /usr/share/elasticsearch/init-scripts
         read_only: true
       - type: bind
-        source: ${ELASTIC_VOLUME}
+        source: ${HOST_ELASTIC_VOLUME}
         target: /usr/share/elasticsearch/data
+        bind:
+          create_host_path: true
+
+  es01-cert:
+    hostname: es01-cert
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    user: "elasticsearch:root"
+    volumes:
+      - type: bind
+        source: ${HOST_ELASTIC_CERTS}
+        target: /tmp/es/
+        bind:
+          create_host_path: true
+
     ports:
       - "${ES_PORT}:9200"
     env_file: ../.env

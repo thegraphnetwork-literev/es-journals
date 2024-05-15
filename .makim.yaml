@@ -33,6 +33,7 @@ groups:
           ./scripts/generate-certificates.sh
       setup:
         dependencies:
+          - task: es.gen-certs
           - task: nginx.proxydomain
           - task: nginx.generate-certificate
 
@@ -58,13 +59,13 @@ groups:
         help: Generate certs
         shell: bash
         run: |
-          mkdir -p "${DATA_DIR}/nginx/certbot_conf/live/${CERTBOT_DOMAIN}"
-          mkdir -p ${{ env.DATA_DIR }}/esconfig/certs
+          mkdir -p "${HOST_ELASTIC_CERTS}"
+          chmod -R 777 "${HOST_ELASTIC_CERTS}"
 
-          CMD="set -x; elasticsearch-certutil ca --pem -v"
-          CMD="$CMD; unzip elastic-stack-ca.zip -d config/certs; set +x;"
+          CMD="elasticsearch-certutil ca --pem -v --out bundle.zip"
+          CMD="$CMD && unzip -o bundle.zip -d /tmp/es"
 
-          sugar run --service es01 --cmd bash -c $CMD
+          sugar run --service es01-cert --options --rm --cmd bash -c "$CMD"
 
       test-certs:
         env-file: .env
@@ -73,9 +74,9 @@ groups:
         dependencies:
           - task: es.gen-certificate
         run: |
-          if docker cp es01:/usr/share/elasticsearch/ca/ca.crt ${{ env.DATA_DIR }}/esconfig/certs/; then
+          if docker cp es01-cert:/usr/share/elasticsearch/ca/ca.crt ${{ env.HOST_ELASTIC_CERTS }}; then
             echo "Certificate copied successfully."
-            curl --cacert ${{ env.DATA_DIR }}/ca/ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
+            curl --cacert ${{ env.HOST_ELASTIC_CERTS }}/ca/ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
           else
             echo "Error: Could not find the certificate in the container."
           fi

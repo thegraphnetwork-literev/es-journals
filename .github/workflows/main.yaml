@@ -17,12 +17,12 @@ env:
   ES_HOSTNAME: https://localhost:9200
   ES_USERNAME: elastic
   ES_PASSWORD: worksfine
-  ES_CERTIF: /tmp/esconfig/certs/http_ca.crt
+  ES_CERTIF: /tmp/es/certs/ca.crt
   DATA_DIR: /tmp
   # Host System Configuration
   HOST_UID: 1000
   HOST_GID: 1000
-  ELASTIC_VOLUME: ../containers/elasticsearch/data
+  HOST_ELASTIC_VOLUME: /tmp/es/data
 
 jobs:
   build:

@@ -13,8 +13,8 @@ services:
       - "443:443"
     volumes:
       - ../containers/nginx/data/config/prod:/etc/nginx/conf.d
-      - ${DATA_DIR}/nginx/certbot_conf:/etc/letsencrypt
-      - ${DATA_DIR}/nginx/certbot_www:/var/www/certbot
+      - ${HOST_CERTBOT_PATH_CONF}:/etc/letsencrypt
+      - ${HOST_CERTBOT_PATH_WWW}:/var/www/certbot
     networks:
       - elastic
     # command: sets a loop which reloads nginx each 6 hours
@@ -31,8 +31,8 @@ services:
     image: certbot/certbot:v2.7.4
     restart: unless-stopped
     volumes:
-      - ${DATA_DIR}/nginx/certbot_conf:/etc/letsencrypt
-      - ${DATA_DIR}/nginx/certbot_www:/var/www/certbot
+      - ${HOST_CERTBOT_PATH_CONF}:/etc/letsencrypt
+      - ${HOST_CERTBOT_PATH_WWW}:/var/www/certbot
     # entrypoint : sets up a loop so certbot checks for certificates
     # renewals every 12 hours
     entrypoint: >
