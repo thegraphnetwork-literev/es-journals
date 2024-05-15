@@ -13,8 +13,8 @@ nginx_template = templates.get_template("nginx.template.conf")
 
 variables = {
     "upstream_name": "webapp",
-    "upstream_service": "literev",  # django container hostname
-    "upstream_port": os.environ.get("FRONTEND_HOST_PORT"),
+    "upstream_service": "esjournals",
+    "upstream_port": os.environ.get("ES_PORT"),
     "certbot_root": "/var/www/certbot",
     "letsencrypt_root": "/etc/letsencrypt",
     "domain": os.environ.get("CERTBOT_DOMAIN").split(",")[0],  # Prevents www.
