@@ -51,7 +51,7 @@ DOMAINS=($CERTBOT_DOMAIN)
 RSA_KEY_SIZE=4096
 EMAIL=${CERTBOT_EMAIL}
 
-cp ${HOST_ELASTIC_CERTS}/ca/* "${HOST_CERTBOT_CERTS_PATH}"
+cp ${HOST_ELASTIC_TMP_CERTS}/ca/* "${HOST_CERTBOT_CERTS_PATH}"
 
 echo "----> Creating dummy certificate for $DOMAINS ..."
 path="/etc/letsencrypt/live/$DOMAINS"
