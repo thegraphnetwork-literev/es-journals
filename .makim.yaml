@@ -61,7 +61,7 @@ groups:
           mkdir -p "${DATA_DIR}/nginx/certbot_conf/live/${CERTBOT_DOMAIN}"
           mkdir -p ${{ env.DATA_DIR }}/esconfig/certs
 
-          sugar run --service es01 --cmd elasticsearch-certutil ca --pem ; elasticsearch-certutil cert --ca-cert config/certs/http_ca.crt
+          sugar run --service es01 --cmd bash -c "elasticsearch-certutil ca --pem -s -v; elasticsearch-certutil cert -s -v --ca-cert config/certs/http_ca.crt"
 
           if docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt ${{ env.DATA_DIR }}/esconfig/certs/; then
             echo "Certificate copied successfully."
