@@ -98,9 +98,6 @@ ENV/
 .vscode/
 .idea/
 
-# Containers
-containers/nginx/*
-
 # Databases
 **data/*
 **containers/elasticsearch/**
@@ -114,3 +111,10 @@ containers/esconfig/
 
 # data
 *.json
+
+
+# Nginx
+containers/nginx/data/sites-available/*
+!containers/nginx/data/sites-available/.gitkeep
+containers/nginx/data/sites-enabled/*
+!containers/nginx/data/sites-enabled/.gitkeep
