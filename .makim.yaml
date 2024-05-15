@@ -58,8 +58,11 @@ groups:
         help: Generate and copy certs
         shell: bash
         run: |
-          sugar run --service es01 --cmd elasticsearch-certutil cert --ca-cert config/certs/http_ca.crt
+          mkdir -p "${DATA_DIR}/nginx/certbot_conf/live/${CERTBOT_DOMAIN}"
           mkdir -p ${{ env.DATA_DIR }}/esconfig/certs
+
+          sugar run --service es01 --cmd elasticsearch-certutil cert --ca-cert config/certs/http_ca.crt
+
           if docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt ${{ env.DATA_DIR }}/esconfig/certs/; then
             echo "Certificate copied successfully."
             curl --cacert ${{ env.DATA_DIR }}/esconfig/certs/http_ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
