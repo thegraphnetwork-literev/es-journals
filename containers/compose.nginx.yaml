@@ -2,12 +2,9 @@ version: '3.7'
 
 services:
   nginx:
-    build:
-      context: ".."
-      dockerfile: "containers/dockerfile.nginx"
-      args:
-        HOST_UID: ${HOST_UID}
-        HOST_GID: ${HOST_GID}
+    hostname: literev-nginx
+    image: nginx:1.25.3
+    restart: unless-stopped
     env_file:
       - ../.env
     container_name: nginx
@@ -15,25 +12,46 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ${NGINX_CONFIG}:/etc/nginx
-      - ${NGINX_CONFIG}/certbot/conf:/etc/letsencrypt
+      volumes:
+      - ../containers/nginx/data/config/prod:/etc/nginx/conf.d
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+      - static_root:/usr/share/nginx/html/${CERTBOT_DOMAIN}/static
     networks:
       - elastic
+    # command: sets a loop which reloads nginx each 6 hours
+    # ensures nginx will always have fresh certificates files
+    command: >
+      /bin/sh -c 'while :; do
+        sleep 6h & wait $${!};
+        nginx -s reload;
+      done &
+      nginx -g "daemon off;"'
+
 
   certbot:
-    build:
-      context: ".."
-      dockerfile: "containers/dockerfile.certbot"
-      args:
-        HOST_UID: ${HOST_UID}
-        HOST_GID: ${HOST_GID}
-    container_name: certbot
+    image: certbot/certbot:v2.7.4
+    restart: unless-stopped
     volumes:
-      - ${NGINX_CONFIG}/certbot/conf:/etc/letsencrypt
-      - ${NGINX_CONFIG}/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; set -x; do certbot renew --dry-run; set +x; sleep 12h & wait $${!}; done;'"
-    networks:
-      - elastic
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    # entrypoint : sets up a loop so certbot checks for certificates
+    # renewals every 12 hours
+    entrypoint: >
+      /bin/sh -c '
+        trap exit TERM;
+        while :; do
+          set -x;
+          certbot renew --dry-run;
+          set +x;
+          sleep 12h & wait $${!};
+        done;
+      '
+
+volumes:
+  certbot_conf:
+  certbot_www:
+
 
 networks:
   elastic:

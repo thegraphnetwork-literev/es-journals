@@ -1,5 +1,41 @@
 version: 1.0
 groups:
+  clean:
+    tasks:
+      all:
+        help: Clean unnecessary temporary files
+        run: |
+          rm -fr build/
+          rm -fr dist/
+          rm -fr .eggs/
+          find . -name '*.egg-info' -exec rm -fr {} +
+          find . -name '*.egg' -exec rm -f {} +
+          find . -name '*.pyc' -exec rm -f {} +
+          find . -name '*.pyo' -exec rm -f {} +
+          find . -name '__pycache__' -exec rm -fr {} +
+          find . -name '*~' -exec rm -f {} +
+          rm -f .coverage
+          rm -fr htmlcov/
+          rm -fr .pytest_cache
+          rm -fr .mypy_cache
+          rm -fr .ruff_cache
+
+  nginx:
+    tasks:
+      proxydomain:
+        help: Create SSL proxy configuration with CertBot for a domain
+        env-file: .env
+        run: |
+          python ./containers/nginx/scripts/generate_proxy_ui.py
+      generate-certificate:
+        help: Generate certificate
+        run: |
+          ./scripts/generate-certificates.sh
+      setup:
+        dependencies:
+          - task: nginx.proxydomain
+          - task: nginx.generate-certificate
+
   containers:
     tasks:
       get-ip:
@@ -37,7 +73,7 @@ groups:
           index-name:
             help: Specify the index name (e.g., 'biorxiv' or 'medrxiv')
             type: string
-            required: true      
+            required: true
         shell: bash
         run: |
           python scripts/es_index_doc_counter.py ${{ args.index_name }}
@@ -82,7 +118,7 @@ groups:
     tasks:
       download-rxivr:
         help: |
-          Download data from BioRxiv/MedRxiv API within a specified date range.  
+          Download data from BioRxiv/MedRxiv API within a specified date range.
         args:
           server:
             help: Specify the server to download (e.g., 'biorxiv' or 'medrxiv')
@@ -119,7 +155,7 @@ groups:
           writeLines(json_data, json_file_path)
 
           cat("Data object stored to:", "${{ args.server }}", "json file \n")
-  
+
       setup-cron:
         help: Setup cron jobs for the develop user
         shell: bash
@@ -136,26 +172,6 @@ groups:
           crontab -u devops $CRON_PATH
 
           echo "Cron jobs for LiteRev Elasticsearch have been set up successfully for user develop."
-
-  clean:
-    tasks:
-      all:
-        help: Clean unnecessary temporary files
-        run: |
-          rm -fr build/
-          rm -fr dist/
-          rm -fr .eggs/
-          find . -name '*.egg-info' -exec rm -fr {} +
-          find . -name '*.egg' -exec rm -f {} +
-          find . -name '*.pyc' -exec rm -f {} +
-          find . -name '*.pyo' -exec rm -f {} +
-          find . -name '__pycache__' -exec rm -fr {} +
-          find . -name '*~' -exec rm -f {} +
-          rm -f .coverage
-          rm -fr htmlcov/
-          rm -fr .pytest_cache
-          rm -fr .mypy_cache
-          rm -fr .ruff_cache
 
   docs:
     tasks:
