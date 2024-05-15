@@ -62,7 +62,7 @@ groups:
           mkdir -p ${{ env.DATA_DIR }}/esconfig/certs
 
           sugar run --service es01 \
-            --cmd bash -c "elasticsearch-certutil ca --pem -v; elasticsearch-certutil cert -v --ca-cert config/certs/http_ca.crt"
+            --cmd bash -c "elasticsearch-certutil ca --pem -v; unzip /certs/bundle.zip -d config/certs/; ls config/certs/"
 
           if docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt ${{ env.DATA_DIR }}/esconfig/certs/; then
             echo "Certificate copied successfully."
