@@ -60,7 +60,7 @@ sugar run --service certbot --options --rm --entrypoint "\
 echo
 
 echo "----> Starting nginx ..."
-    sugar up --service literev-nginx --options --force-recreate -d
+    sugar up --services nginx --options --force-recreate -d
 echo
 
 echo "----> Deleting dummy certificate for $DOMAINS ..."
@@ -99,4 +99,4 @@ sugar run --service certbot --options --rm --entrypoint "\
 echo
 
 echo "----> Reloading nginx ..."
-sugar exec --service literev-nginx --cmd nginx -s reload
+sugar exec --service nginx --cmd nginx -s reload
