@@ -4,7 +4,7 @@ services:
   nginx:
     build:
       context: ".."
-      dockerfile: "containers/dockerfile.nginx" # Relative path
+      dockerfile: "containers/dockerfile.nginx"
       args:
         HOST_UID: ${HOST_UID}
         HOST_GID: ${HOST_GID}
@@ -15,18 +15,23 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ${NGINX_CONFIG}:/etc/nginx # Relative path
-      - ${NGINX_CONFIG}/certbot/conf:/etc/nginx/letsencrypt
+      - ${NGINX_CONFIG}:/etc/nginx
+      - ${NGINX_CONFIG}/certbot/conf:/etc/letsencrypt
     networks:
       - elastic
 
   certbot:
-    image: certbot/certbot
+    build:
+      context: ".."
+      dockerfile: "containers/dockerfile.certbot"
+      args:
+        HOST_UID: ${HOST_UID}
+        HOST_GID: ${HOST_GID}
     container_name: certbot
     volumes:
       - ${NGINX_CONFIG}/certbot/conf:/etc/letsencrypt
       - ${NGINX_CONFIG}/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; set -x; do certbot renew --dry-run; set +x; sleep 12h & wait $${!}; done;'"
     networks:
       - elastic
 
