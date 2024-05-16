@@ -42,7 +42,7 @@ services:
         trap exit TERM;
         while :; do
           set -x;
-          certbot renew --dry-run;
+          certbot renew
           set +x;
           sleep 12h & wait $${!};
         done;
