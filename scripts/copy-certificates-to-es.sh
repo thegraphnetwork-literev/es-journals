@@ -18,11 +18,11 @@ ORIGINAL_PRIVKEY_FILENAME=$(sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_
 ORIGINAL_CERT_FILENAME=$(sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep 'cert' | sort -V | tail -n 1)
 ORIGINAL_CHAIN_FILENAME=$(sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep 'chain' | sort -V | tail -n 1)
 
-# Check if any of the variables are not empty
-if [[ -n "$ORIGINAL_PRIVKEY_FILENAME" || -n "$ORIGINAL_CERT_FILENAME" || -n "$ORIGINAL_CHAIN_FILENAME" ]]; then
-  echo "At least one of the variables is not empty."
+# Check if all variables are not empty
+if [[ -n "$ORIGINAL_PRIVKEY_FILENAME" && -n "$ORIGINAL_CERT_FILENAME" && -n "$ORIGINAL_CHAIN_FILENAME" ]]; then
+  echo "All variables are not empty."
 else
-  echo "All variables are empty."
+  echo "One or more variables are empty."
 fi
 
 sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_PRIVKEY_FILENAME} "${HOST_ELASTIC_CERTS}/"
