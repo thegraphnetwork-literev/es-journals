@@ -12,7 +12,7 @@ templates = Environment(
 nginx_template = templates.get_template("nginx.template.conf")
 
 variables = {
-    "upstream_name": "es",
+    "upstream_name": "es01",
     "upstream_service": "es01",
     "upstream_port": os.environ.get("ES_PORT"),
     "certbot_root": "/var/www/certbot",
