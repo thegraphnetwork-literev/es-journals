@@ -53,7 +53,7 @@ DOMAINS=($CERTBOT_DOMAIN)
 RSA_KEY_SIZE=4096
 EMAIL=${CERTBOT_EMAIL}
 
-# not necessary anymore, due the workaround with python http.server
+# TODO: not necessary anymore, due the workaround with python http.server
 # cp ${HOST_ELASTIC_TMP_CERTS}/ca/* "${HOST_CERTBOT_CERTS_PATH}"
 
 echo "----> Creating dummy certificate for $DOMAINS ..."
@@ -68,13 +68,8 @@ sugar run --service certbot --options --rm --entrypoint "\
 -subj '/CN=localhost'"
 echo
 
-echo "----> Starting services ..."
-# Start the Python HTTP server in the background
-python -m http.server 9200 &
-# Capture the PID of the background process
-HTTP_SERVER_9200_PID=$!
-
-sugar up --services nginx,certbot --options --force-recreate -d
+sugar pull --services es01-fake
+sugar up --services nginx,certbot,es01-fake --options --force-recreate -d
 echo
 
 echo "----> Deleting dummy certificate for $DOMAINS ..."
@@ -116,6 +111,5 @@ echo "----> Reloading nginx ..."
 sugar exec --service nginx --cmd nginx -s reload
 
 sugar stop
-kill $HTTP_SERVER_9200_PID
 
 set +ex
