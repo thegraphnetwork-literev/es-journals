@@ -58,8 +58,8 @@ groups:
         help: Generate certs
         shell: bash
         run: |
-          mkdir -p "${HOST_ELASTIC_TMP_CERTS}"
-          chmod -R 777 "${HOST_ELASTIC_TMP_CERTS}"
+          mkdir -p "${HOST_ELASTIC_CERTS}"
+          chmod -R 777 "${HOST_ELASTIC_CERTS}"
 
           CMD="elasticsearch-certutil ca --pem -v --out bundle.zip"
           CMD="$CMD && unzip -o bundle.zip -d /tmp/es"
@@ -79,9 +79,9 @@ groups:
         dependencies:
           - task: es.gen-certificate
         run: |
-          if docker cp es01-cert:/usr/share/elasticsearch/ca/ca.crt ${{ env.HOST_ELASTIC_TMP_CERTS }}; then
+          if docker cp es01-cert:/usr/share/elasticsearch/ca/ca.crt ${{ env.HOST_ELASTIC_CERTS }}; then
             echo "Certificate copied successfully."
-            curl --cacert ${{ env.HOST_ELASTIC_TMP_CERTS }}/ca/ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
+            curl --cacert ${{ env.HOST_ELASTIC_CERTS }}/ca/ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
           else
             echo "Error: Could not find the certificate in the container."
           fi
