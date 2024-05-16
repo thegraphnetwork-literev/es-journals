@@ -16,11 +16,14 @@ ORIGINAL_PRIVKEY_FILENAME=sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PA
 ORIGINAL_CERT_FILENAME=sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep 'cert' | sort -V | tail -n 1
 ORIGINAL_CHAIN_FILENAME=sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep 'chain' | sort -V | tail -n 1
 
-sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_PRIVKEY_FILENAME} "${HOST_ELASTIC_CERTS}/privkey.pem"
-sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_CERT_FILENAME} "${HOST_ELASTIC_CERTS}/cert.pem"
-sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_CHAIN_FILENAME} "${HOST_ELASTIC_CERTS}/chain.pem"
+sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_PRIVKEY_FILENAME} "${HOST_ELASTIC_CERTS}/"
+sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_CERT_FILENAME} "${HOST_ELASTIC_CERTS}/"
+sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_CHAIN_FILENAME} "${HOST_ELASTIC_CERTS}/"
 
 pushd "$HOST_ELASTIC_CERTS"
+mv ${ORIGINAL_PRIVKEY_FILENAME} privkey.pem
+mv ${ORIGINAL_CERT_FILENAME} cert.pem
+mv ${ORIGINAL_CHAIN_FILENAME} chain.pem
 chown ${ELASTICSEARCH_UID}:${ELASTICSEARCH_GID} privkey.pem cert.pem chain.pem
 chmod 644 privkey.pem cert.pem chain.pem
 popd
