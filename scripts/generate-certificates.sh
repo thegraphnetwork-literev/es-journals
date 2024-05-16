@@ -110,6 +110,6 @@ echo
 echo "----> Reloading nginx ..."
 sugar exec --service nginx --cmd nginx -s reload
 
-sugar stop
+sugar stop --all
 
 set +ex

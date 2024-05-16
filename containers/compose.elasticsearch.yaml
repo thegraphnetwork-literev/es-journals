@@ -6,7 +6,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
       - type: bind
-        source: ${HOST_CERTBOT_PATH_CONF}/live/${CERTBOT_DOMAIN}
+        source: ${HOST_CERTBOT_PATH_CONF}/archive/${CERTBOT_DOMAIN}
         target: /usr/share/elasticsearch/config/certs
         bind:
           create_host_path: true
