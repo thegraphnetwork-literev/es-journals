@@ -10,7 +10,7 @@ mkdir -p "${HOST_CERT_PATH}"
 
 set -ex
 
-sugar ext start --service nginx
+sugar ext start --services nginx
 
 sleep 5
 
