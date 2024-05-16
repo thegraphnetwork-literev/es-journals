@@ -66,6 +66,12 @@ groups:
 
           sugar run --service es01-cert --options --rm --cmd bash -c "$CMD"
 
+      copy-certs-from-nginx:
+        env-file: .env
+        help: Generate certs
+        shell: bash
+        run: scripts/copy-certificates-to-es.sh
+
       test-certs:
         env-file: .env
         help: Generate and copy certs
