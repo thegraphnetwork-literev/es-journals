@@ -6,7 +6,7 @@ ES_CERT_PATH=/usr/share/elasticsearch/config/certs
 OWNER_UID=$(id -u)
 OWNER_GID=$(id -g)
 
-mkdir -p "${HOST_CERT_PATH}"
+mkdir -p "${HOST_ELASTIC_CERTS}"
 
 set -ex
 
@@ -19,18 +19,18 @@ ORIGINAL_PRIVKEY_FILENAME=sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PA
 ORIGINAL_CERT_FILENAME=sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep 'cert' | sort -V | tail -n 1
 ORIGINAL_CHAIN_FILENAME=sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep 'chain' | sort -V | tail -n 1
 
-sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_PRIVKEY_FILENAME} "${HOST_CERT_PATH}/privkey.pem"
-sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_CERT_FILENAME} "${HOST_CERT_PATH}/cert.pem"
-sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_CHAIN_FILENAME} "${HOST_CERT_PATH}/chain.pem"
+sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_PRIVKEY_FILENAME} "${HOST_ELASTIC_CERTS}/privkey.pem"
+sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_CERT_FILENAME} "${HOST_ELASTIC_CERTS}/cert.pem"
+sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_CHAIN_FILENAME} "${HOST_ELASTIC_CERTS}/chain.pem"
 
-pushd "$HOST_CERT_PATH"
+pushd "$HOST_ELASTIC_CERTS"
 chown ${OWNER_UID}:${OWNER_GID} privkey.pem cert.pem chain.pem
 chmod 644 privkey.pem cert.pem chain.pem
 popd
 
-# sugar cp --options ${HOST_CERT_PATH}/privkey.pem es01:${ES_CERT_PATH}/privkey.pem
-# sugar cp --options ${HOST_CERT_PATH}/cert.pem    es01:${ES_CERT_PATH}/cert.pem
-# sugar cp --options ${HOST_CERT_PATH}/chain.pem   es01:${ES_CERT_PATH}/chain.pem
+# sugar cp --options ${HOST_ELASTIC_CERTS}/privkey.pem es01:${ES_CERT_PATH}/privkey.pem
+# sugar cp --options ${HOST_ELASTIC_CERTS}/cert.pem    es01:${ES_CERT_PATH}/cert.pem
+# sugar cp --options ${HOST_ELASTIC_CERTS}/chain.pem   es01:${ES_CERT_PATH}/chain.pem
 
 sugar ext stop --all
 
