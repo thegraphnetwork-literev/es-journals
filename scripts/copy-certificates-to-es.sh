@@ -7,7 +7,8 @@ set -ex
 
 mkdir -p "${HOST_ELASTIC_CERTS}"
 
-sugar ext start --services nginx
+sugar ext stop --all
+sugar ext start --services nginx,es01-fake
 
 sleep 5
 
