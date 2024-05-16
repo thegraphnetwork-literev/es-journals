@@ -48,7 +48,6 @@ services:
   es01-fake:
     hostname: es01
     image: python
-    volumes:
     ports:
       - "${ES_PORT}:9200"
     env_file: ../.env
