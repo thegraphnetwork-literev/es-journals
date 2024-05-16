@@ -33,8 +33,8 @@ pushd "$HOST_ELASTIC_CERTS"
 mv ${ORIGINAL_PRIVKEY_FILENAME} privkey.pem
 mv ${ORIGINAL_CERT_FILENAME} cert.pem
 mv ${ORIGINAL_CHAIN_FILENAME} chain.pem
-chown ${ELASTICSEARCH_UID}:${ELASTICSEARCH_GID} privkey.pem cert.pem chain.pem
-chmod 644 privkey.pem cert.pem chain.pem
+sudo chown ${ELASTICSEARCH_UID}:${ELASTICSEARCH_GID} privkey.pem cert.pem chain.pem
+sudo chmod 644 privkey.pem cert.pem chain.pem
 popd
 
 # sugar cp --options ${HOST_ELASTIC_CERTS}/privkey.pem es01:${ES_CERT_PATH}/privkey.pem
