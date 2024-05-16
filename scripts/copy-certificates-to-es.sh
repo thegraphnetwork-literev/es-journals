@@ -3,9 +3,6 @@
 NGINX_CERT_PATH=/etc/letsencrypt/archive/${CERTBOT_DOMAIN}
 ES_CERT_PATH=/usr/share/elasticsearch/config/certs
 
-ELASTICSEARCH_UID=$(id -u)
-ELASTICSEARCH_GID=$(id -g)
-
 set -ex
 
 mkdir -p "${HOST_ELASTIC_CERTS}"
