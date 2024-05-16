@@ -19,3 +19,10 @@ services:
       - 9200:9200
     healthcheck:
       test: ["CMD-SHELL", "curl -s -k ${ES_HOSTNAME} | grep -q 'missing authentication credentials'"]
+    networks:
+      - literev_literev
+
+
+networks:
+  literev_literev:
+    external: true

@@ -51,6 +51,8 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
+    networks:
+      - elastic
 
 
   # es01-cert:
@@ -63,3 +65,6 @@ services:
   #       target: /tmp/es/
   #       bind:
   #         create_host_path: true
+
+networks:
+  elastic:

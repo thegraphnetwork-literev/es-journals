@@ -35,6 +35,8 @@ services:
       - ${HOST_CERTBOT_PATH_WWW}:/var/www/certbot
     # entrypoint : sets up a loop so certbot checks for certificates
     # renewals every 12 hours
+    networks:
+      - elastic
     entrypoint: >
       /bin/sh -c '
         trap exit TERM;
@@ -45,12 +47,15 @@ services:
           sleep 12h & wait $${!};
         done;
       '
+
   es01-fake:
     hostname: es01
     image: python
     ports:
       - "${ES_PORT}:9200"
     env_file: ../.env
+    networks:
+      - elastic
     command: python -m http.server 9200
 
 networks:
