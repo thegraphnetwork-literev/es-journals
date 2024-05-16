@@ -8,8 +8,9 @@ set -ex
 mkdir -p "${HOST_ELASTIC_CERTS}"
 
 sugar ext stop --all
-sugar ext start --services nginx,es01-fake
-
+sugar ext start --services es01-fake --options -d
+sleep 1
+sugar ext start --services nginx --options -d
 sleep 5
 
 # note: not sure if this method would be robust for numbers more than 9
