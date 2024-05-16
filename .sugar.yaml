@@ -16,7 +16,7 @@ groups:
         - name: es01
         - name: nginx
         - name: certbot
-        - name: es01-cert
+        - name: es01-fake
   dev:
     compose-path:
       - containers/compose.elasticsearch.dev.yaml
