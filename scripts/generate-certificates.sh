@@ -39,8 +39,10 @@ fi
 # Check if CERTBOT_EMAIL is set and not empty
 if [ -z "$CERTBOT_EMAIL" ]; then
     echo 'Error: CERTBOT_EMAIL is not set or empty.' >&2
-    exit 1
+    exit 180
 fi
+
+set -ex
 
 HOST_CERTBOT_CERTS_PATH="${HOST_CERTBOT_PATH_CONF}/live/${CERTBOT_DOMAIN}"
 
@@ -66,7 +68,12 @@ sugar run --service certbot --options --rm --entrypoint "\
 echo
 
 echo "----> Starting services ..."
-    sugar up --options --force-recreate -d
+# Start the Python HTTP server in the background
+python -m http.server 9200 &
+# Capture the PID of the background process
+HTTP_SERVER_9200_PID=$!
+
+sugar up --services nginx,certbot --options --force-recreate -d
 echo
 
 echo "----> Deleting dummy certificate for $DOMAINS ..."
@@ -106,3 +113,8 @@ echo
 
 echo "----> Reloading nginx ..."
 sugar exec --service nginx --cmd nginx -s reload
+
+sugar stop
+kill $HTTP_SERVER_9200_PID
+
+set +ex

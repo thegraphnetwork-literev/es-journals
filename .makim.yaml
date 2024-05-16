@@ -33,7 +33,6 @@ groups:
           ./scripts/generate-certificates.sh
       setup:
         dependencies:
-          - task: es.gen-certs
           - task: nginx.proxydomain
           - task: nginx.generate-certificate
 

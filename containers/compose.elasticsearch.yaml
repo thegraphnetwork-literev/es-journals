@@ -19,18 +19,6 @@ services:
         target: /usr/share/elasticsearch/data
         bind:
           create_host_path: true
-
-  es01-cert:
-    hostname: es01-cert
-    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
-    user: "elasticsearch:root"
-    volumes:
-      - type: bind
-        source: ${HOST_ELASTIC_TMP_CERTS}
-        target: /tmp/es/
-        bind:
-          create_host_path: true
-
     ports:
       - "${ES_PORT}:9200"
     env_file: ../.env
@@ -63,3 +51,15 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
+
+
+  # es01-cert:
+  #   hostname: es01-cert
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+  #   user: "elasticsearch:root"
+  #   volumes:
+  #     - type: bind
+  #       source: ${HOST_ELASTIC_TMP_CERTS}
+  #       target: /tmp/es/
+  #       bind:
+  #         create_host_path: true
