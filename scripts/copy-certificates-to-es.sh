@@ -6,9 +6,9 @@ ES_CERT_PATH=/usr/share/elasticsearch/config/certs
 OWNER_UID=$(id -u)
 OWNER_GID=$(id -g)
 
-mkdir -p "${HOST_ELASTIC_CERTS}"
-
 set -ex
+
+mkdir -p "${HOST_ELASTIC_CERTS}"
 
 sugar ext start --services nginx
 
