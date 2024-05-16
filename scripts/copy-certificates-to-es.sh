@@ -3,8 +3,8 @@
 NGINX_CERT_PATH=/etc/letsencrypt/archive/${CERTBOT_DOMAIN}
 ES_CERT_PATH=/usr/share/elasticsearch/config/certs
 
-OWNER_UID=$(id -u)
-OWNER_GID=$(id -g)
+ELASTICSEARCH_UID=$(id -u)
+ELASTICSEARCH_GID=$(id -g)
 
 set -ex
 
@@ -24,7 +24,7 @@ sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_CERT_FILENAME} "${HOST_EL
 sugar cp --options nginx:${NGINX_CERT_PATH}/${ORIGINAL_CHAIN_FILENAME} "${HOST_ELASTIC_CERTS}/chain.pem"
 
 pushd "$HOST_ELASTIC_CERTS"
-chown ${OWNER_UID}:${OWNER_GID} privkey.pem cert.pem chain.pem
+chown ${ELASTICSEARCH_UID}:${ELASTICSEARCH_GID} privkey.pem cert.pem chain.pem
 chmod 644 privkey.pem cert.pem chain.pem
 popd
 
