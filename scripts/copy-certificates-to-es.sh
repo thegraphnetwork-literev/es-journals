@@ -6,11 +6,11 @@ set -ex
 
 mkdir -p "${HOST_ELASTIC_CERTS}"
 
-sugar ext stop --all
-sugar ext start --services es01-fake --options -d
-sleep 1
-sugar ext start --services nginx --options -d
-sleep 5
+# sugar ext stop --all
+# sugar ext start --services es01-fake --options -d
+# sleep 1
+# sugar ext start --services nginx --options -d
+# sleep 5
 
 # note: not sure if this method would be robust for numbers more than 9
 # note: using sugar, not necessary when the docker volume points to a specific path
@@ -54,7 +54,7 @@ sudo chown ${ELASTICSEARCH_UID}:${ELASTICSEARCH_GID} privkey.pem cert.pem chain.
 sudo chmod 644 privkey.pem cert.pem chain.pem fullchain.pem
 popd
 
-sugar ext stop --all
+# sugar ext stop --all
 
 set +ex
 
