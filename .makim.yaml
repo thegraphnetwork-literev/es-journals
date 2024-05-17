@@ -1,7 +1,43 @@
 version: 1.0
 groups:
+  clean:
+    tasks:
+      all:
+        help: Clean unnecessary temporary files
+        run: |
+          rm -fr build/
+          rm -fr dist/
+          rm -fr .eggs/
+          find . -name '*.egg-info' -exec rm -fr {} +
+          find . -name '*.egg' -exec rm -f {} +
+          find . -name '*.pyc' -exec rm -f {} +
+          find . -name '*.pyo' -exec rm -f {} +
+          find . -name '__pycache__' -exec rm -fr {} +
+          find . -name '*~' -exec rm -f {} +
+          rm -f .coverage
+          rm -fr htmlcov/
+          rm -fr .pytest_cache
+          rm -fr .mypy_cache
+          rm -fr .ruff_cache
+
+  nginx:
+    tasks:
+      proxydomain:
+        help: Create SSL proxy configuration with CertBot for a domain
+        env-file: .env
+        run: |
+          python ./containers/nginx/scripts/generate_proxy_ui.py
+      generate-certificate:
+        help: Generate certificate
+        run: |
+          ./scripts/generate-certificates.sh
+      setup:
+        dependencies:
+          - task: nginx.proxydomain
+          - task: nginx.generate-certificate
+
   containers:
-    targets:
+    tasks:
       get-ip:
         help: Get the IP from a container-ID
         args:
@@ -13,23 +49,53 @@ groups:
         run: |
           docker inspect \
             -f {% raw -%}"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}"{%- endraw %} \
-            {{ args.container_id }}
+            ${{ args.container_id }}
 
-  develop:
-    targets:
+  es:
+    tasks:
+      # note: deprecated
+      # gen-certs:
+      #   env-file: .env
+      #   help: Generate certs
+      #   shell: bash
+      #   run: |
+      #     mkdir -p "${HOST_ELASTIC_CERTS}"
+      #     chmod -R 777 "${HOST_ELASTIC_CERTS}"
+      #
+      #     CMD="elasticsearch-certutil ca --pem -v --out bundle.zip"
+      #     CMD="$CMD && unzip -o bundle.zip -d /tmp/es"
+      #
+      #     sugar run --service es01-cert --options --rm --cmd bash -c "$CMD"
+
+      copy-certs-from-nginx:
+        env-file: .env
+        help: Generate certs
+        shell: bash
+        run: scripts/copy-certificates-to-es.sh
+
       test-certs:
         env-file: .env
         help: Generate and copy certs
         shell: bash
+        dependencies:
+          - task: es.gen-certificate
         run: |
-          mkdir -p containers/esconfig/certs
-          if docker cp es:/usr/share/elasticsearch/config/certs/http_ca.crt ./containers/esconfig/certs/; then
+          if docker cp es01-cert:/usr/share/elasticsearch/ca/ca.crt ${{ env.HOST_ELASTIC_CERTS }}; then
             echo "Certificate copied successfully."
-            curl --cacert ./containers/esconfig/certs/http_ca.crt -u elastic:{{ env.ES_PASSWORD }} https://localhost:9200/
+            curl --cacert ${{ env.HOST_ELASTIC_CERTS }}/ca/ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
           else
             echo "Error: Could not find the certificate in the container."
           fi
-
+  certs:
+    tasks:
+      generate:
+        help: Generate SSL certificates
+        env-file: .env
+        dependencies:
+          - task: nginx.setup
+          - task: es.copy-certs-from-nginx
+  develop:
+    tasks:
       count-docs-in-index:
         help: |
           Download data from BioRxiv/MedRxiv API within a specified date range.
@@ -37,10 +103,10 @@ groups:
           index-name:
             help: Specify the index name (e.g., 'biorxiv' or 'medrxiv')
             type: string
-            required: true      
+            required: true
         shell: bash
         run: |
-          python scripts/es_index_doc_counter.py {{ args.index_name }}
+          python scripts/es_index_doc_counter.py ${{ args.index_name }}
 
       setup-dev-env:
         help: Setup development environment and prepare .env file if it doesn't exist.
@@ -56,15 +122,15 @@ groups:
           index_data_dir="containers/elasticsearch/data"
           mkdir -p "${index_data_dir}"
 
-          download_dir="data/rxivx/{{ args.server_name }}/downloaded"
+          download_dir="data/rxivx/${{ args.server_name }}/downloaded"
           mkdir -p "${download_dir}"
 
           last_date=$(date -d "yesterday" '+%Y-%m-%d')
           current_date=$(date -d "yesterday" '+%Y-%m-%d')
-          output_filename="{{ args.server_name }}_${last_date}_${current_date}.json"
+          output_filename="${{ args.server_name }}_${last_date}_${current_date}.json"
           touch "${download_dir}/${output_filename}"
           ls -la ${download_dir}/${output_filename}
-          echo "Prepared development environment for server: {{ args.server_name }}"
+          echo "Prepared development environment for server: ${{ args.server_name }}"
 
           if [ -f ".env" ]; then
               echo ".env file already exists. Exiting without modifying environment variables."
@@ -79,10 +145,10 @@ groups:
           fi
 
   scheduler:
-    targets:
+    tasks:
       download-rxivr:
         help: |
-          Download data from BioRxiv/MedRxiv API within a specified date range.  
+          Download data from BioRxiv/MedRxiv API within a specified date range.
         args:
           server:
             help: Specify the server to download (e.g., 'biorxiv' or 'medrxiv')
@@ -105,21 +171,21 @@ groups:
           library(medrxivr)
           library(jsonlite)
 
-          print("Starting download data from: {{ args.server }}")
+          print("Starting download data from: ${{ args.server }}")
 
           biorxiv_data <- mx_api_content(
-            server = '{{ args.server }}',
-            from_date = "{{ args.begin }}",
-            to_date = "{{ args.end }}"
+            server = '${{ args.server }}',
+            from_date = "${{ args.begin }}",
+            to_date = "${{ args.end }}"
           )
 
           json_data <- toJSON(biorxiv_data, pretty = TRUE)
 
-          json_file_path <- "{{ args.target }}{{ args.server }}_{{ args.begin }}_{{ args.end }}.json"
+          json_file_path <- "${{ args.target }}${{ args.server }}_${{ args.begin }}_${{ args.end }}.json"
           writeLines(json_data, json_file_path)
 
-          cat("Data object stored to:", "{{ args.server }}", "json file \n")
-  
+          cat("Data object stored to:", "${{ args.server }}", "json file \n")
+
       setup-cron:
         help: Setup cron jobs for the develop user
         shell: bash
@@ -137,28 +203,8 @@ groups:
 
           echo "Cron jobs for LiteRev Elasticsearch have been set up successfully for user develop."
 
-  clean:
-    targets:
-      all:
-        help: Clean unnecessary temporary files
-        run: |
-          rm -fr build/
-          rm -fr dist/
-          rm -fr .eggs/
-          find . -name '*.egg-info' -exec rm -fr {} +
-          find . -name '*.egg' -exec rm -f {} +
-          find . -name '*.pyc' -exec rm -f {} +
-          find . -name '*.pyo' -exec rm -f {} +
-          find . -name '__pycache__' -exec rm -fr {} +
-          find . -name '*~' -exec rm -f {} +
-          rm -f .coverage
-          rm -fr htmlcov/
-          rm -fr .pytest_cache
-          rm -fr .mypy_cache
-          rm -fr .ruff_cache
-
   docs:
-    targets:
+    tasks:
       build:
         help: Build documentation
         run: |
@@ -167,12 +213,12 @@ groups:
       preview:
         help: Preview documentation page locally
         dependencies:
-          - target: docs.build
+          - task: docs.build
         run: |
           mkdocs build --config-file docs/mkdocs.yaml
 
   tests:
-    targets:
+    tasks:
       linter:
         help: Run linter tools
         run: |

@@ -14,8 +14,7 @@ dependencies:
   - shellcheck
   - typer
   - pip:
-    - makim
-    - containers-sugar
+    - makim==1.15.2
+    - containers-sugar==1.13.0
     - pytest
     - tqdm
-  

@@ -98,9 +98,6 @@ ENV/
 .vscode/
 .idea/
 
-# Containers
-containers/nginx/*
-
 # Databases
 **data/*
 **containers/elasticsearch/**
@@ -110,7 +107,18 @@ containers/nginx/*
 
 # certificates
 *.pem
-containers/esconfig/
 
 # data
 *.json
+
+
+# Nginx
+containers/nginx/data/sites-available/*
+!containers/nginx/data/sites-available/.gitkeep
+containers/nginx/data/sites-enabled/*
+!containers/nginx/data/sites-enabled/.gitkeep
+
+# ignore config files generated in production only
+containers/nginx/data/config/prod/prod.nginx.conf
+*.pem
+containers/nginx/data/certbot/*
