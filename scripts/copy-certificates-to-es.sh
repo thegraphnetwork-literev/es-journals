@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-NGINX_CERT_PATH=/etc/letsencrypt/archive/${CERTBOT_DOMAIN}
 ES_CERT_PATH=/usr/share/elasticsearch/config/certs
 
 set -ex
@@ -14,6 +13,26 @@ sugar ext start --services nginx --options -d
 sleep 5
 
 # note: not sure if this method would be robust for numbers more than 9
+# note: using sugar, not necessary when the docker volume points to a specific path
+# ORIGINAL_PRIVKEY_FILENAME=$(sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep 'privkey' | sort -V | tail -n 1)
+# ORIGINAL_CERT_FILENAME=$(sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep 'cert' | sort -V | tail -n 1)
+# ORIGINAL_CHAIN_FILENAME=$(sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep '^chain' | sort -V | tail -n 1)
+# ORIGINAL_FULLCHAIN_FILENAME=$(sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep 'fullchain' | sort -V | tail -n 1)
+
+# Determine the latest version of the folder
+LATEST_DIR=$(ls -d ${HOST_CERTBOT_PATH_CONF}/archive/${CERTBOT_DOMAIN}-* | sort -V | tail -n 1)
+
+# Update NGINX_CERT_PATH
+if [[ -n "$LATEST_DIR" ]]; then
+  NGINX_CERT_PATH=$LATEST_DIR
+  echo "NGINX_CERT_PATH has been set to: $NGINX_CERT_PATH"
+else
+  echo "No directory found for the domain: $CERTBOT_DOMAIN"
+  exit 1
+fi
+
+exit 0
+
 ORIGINAL_PRIVKEY_FILENAME=$(sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep 'privkey' | sort -V | tail -n 1)
 ORIGINAL_CERT_FILENAME=$(sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep 'cert' | sort -V | tail -n 1)
 ORIGINAL_CHAIN_FILENAME=$(sugar exec --service nginx --cmd ls -1 ${NGINX_CERT_PATH} | grep '^chain' | sort -V | tail -n 1)
