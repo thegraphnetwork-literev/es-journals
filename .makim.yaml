@@ -92,8 +92,8 @@ groups:
         help: Generate SSL certificates
         env-file: .env
         dependencies:
-          - tasks: nginx.setup
-          - tasks: es.copy-certs-from-nginx
+          - task: nginx.setup
+          - task: es.copy-certs-from-nginx
   develop:
     tasks:
       count-docs-in-index:
