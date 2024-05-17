@@ -32,6 +32,7 @@ if [[ -n "$ORIGINAL_PRIVKEY_FILENAME" && -n "$ORIGINAL_CERT_FILENAME" && -n "$OR
   echo "All variables are not empty."
 else
   echo "One or more variables are empty."
+  exit 1
 fi
 
 # note: using sugar, not necessary when the docker volume points to a specific path
