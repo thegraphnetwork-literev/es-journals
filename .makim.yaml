@@ -53,18 +53,19 @@ groups:
 
   es:
     tasks:
-      gen-certs:
-        env-file: .env
-        help: Generate certs
-        shell: bash
-        run: |
-          mkdir -p "${HOST_ELASTIC_CERTS}"
-          chmod -R 777 "${HOST_ELASTIC_CERTS}"
-
-          CMD="elasticsearch-certutil ca --pem -v --out bundle.zip"
-          CMD="$CMD && unzip -o bundle.zip -d /tmp/es"
-
-          sugar run --service es01-cert --options --rm --cmd bash -c "$CMD"
+      # note: deprecated
+      # gen-certs:
+      #   env-file: .env
+      #   help: Generate certs
+      #   shell: bash
+      #   run: |
+      #     mkdir -p "${HOST_ELASTIC_CERTS}"
+      #     chmod -R 777 "${HOST_ELASTIC_CERTS}"
+      #
+      #     CMD="elasticsearch-certutil ca --pem -v --out bundle.zip"
+      #     CMD="$CMD && unzip -o bundle.zip -d /tmp/es"
+      #
+      #     sugar run --service es01-cert --options --rm --cmd bash -c "$CMD"
 
       copy-certs-from-nginx:
         env-file: .env
@@ -85,6 +86,14 @@ groups:
           else
             echo "Error: Could not find the certificate in the container."
           fi
+  certs:
+    tasks:
+      generate:
+        help: Generate SSL certificates
+        env-file: .env
+        dependencies:
+          - tasks: nginx.setup
+          - tasks: es.copy-certs-from-nginx
   develop:
     tasks:
       count-docs-in-index:

@@ -59,6 +59,8 @@ EMAIL=${CERTBOT_EMAIL}
 echo "----> Creating dummy certificate for $DOMAINS ..."
 path="/etc/letsencrypt/live/$DOMAINS"
 
+sugar ext stop --all
+
 sugar run --service certbot --options --rm --entrypoint "mkdir -p $path"
 
 sugar run --service certbot --options --rm --entrypoint "\
