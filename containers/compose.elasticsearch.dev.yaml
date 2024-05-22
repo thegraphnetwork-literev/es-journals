@@ -1,21 +1,34 @@
-version: "3.9"
-
 services:
   es:
-    hostname: es
-    container_name: es
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
-    user: "1000:1000"  # Set the UID:GID to run the container
+    container_name: es
+    user: "1000:1000"
     env_file:
       ../.env
     environment:
-      - discovery.type=single-node
       - node.name=es
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=false
       - ELASTIC_PASSWORD=${ES_PASSWORD}
-      - bootstrap.memory_lock=true
-      - xpack.security.enabled=false
-      - xpack.security.enrollment.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
-    healthcheck:
-      test: ["CMD-SHELL", "curl -s -k ${ES_HOSTNAME} | grep -q 'missing authentication credentials'"]
+    networks:
+      - elastic
+
+
+volumes:
+  esdata:
+    driver: local
+    name: es_data
+
+networks:
+  elastic:
+    driver: bridge
+    name: elastic_dev_xnet
