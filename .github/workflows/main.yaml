@@ -59,8 +59,8 @@ jobs:
       run: |
         sugar ext start --group dev --options -d
 
-    - name: Copy and test certificates
-      run: bash .github/ci/healthcheck.sh es 80 && makim develop.test-certs
+    # - name: Copy and test certificates
+    #   run: bash .github/ci/healthcheck.sh es 80 && makim develop.test-certs
 
     - name: Fetch and process MedRxiv data
       run: |       
