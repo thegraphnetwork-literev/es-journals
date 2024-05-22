@@ -132,7 +132,7 @@ groups:
 
           json_data <- toJSON(biorxiv_data, pretty = TRUE)
 
-          json_file_path <- "${{ args.task }}${{ args.server }}_${{ args.begin }}_${{ args.end }}.json"
+          json_file_path <- "${{ args.target }}${{ args.server }}_${{ args.begin }}_${{ args.end }}.json"
           writeLines(json_data, json_file_path)
 
           cat("Data object stored to:", "${{ args.server }}", "json file \n")
