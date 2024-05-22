@@ -38,7 +38,7 @@ def create_es_client(
     Elasticsearch
         An instance of Elasticsearch client configured with the given credentials.
     """
-    return Elasticsearch([host], basic_auth=(username, password), ca_certs=ca_certs)
+    return Elasticsearch([host], basic_auth=(username, password), verify_certs=False)
 
 
 def get_total_documents_in_index(es: Elasticsearch, index_name: str) -> int:

@@ -2,6 +2,6 @@ SHELL=/bin/bash
 
 # m h  dom mon dow   commandid
 # “At 02:00.”
-0 2 * * * . ~/.bashrc && cd /opt/services/literev-elasticsearch/ && bash /opt/services/literev-elasticsearch/scripts/fetch_rxivx_data.sh medrxiv  >> /tmp/medrxiv_cronjob.log 2>&1
+0 2 * * * . ~/.bashrc && cd /opt/services/es-journals/ && bash /opt/services/es-journals/scripts/fetch_rxivx_data.sh medrxiv  >> /tmp/medrxiv_cronjob.log 2>&1
 # “At 02:30.”
-30 2 * * * . ~/.bashrc && cd /opt/services/literev-elasticsearch/ && bash /opt/services/literev-elasticsearch/scripts/fetch_rxivx_data.sh biorxiv  >> /tmp/biorxiv_cronjob.log 2>&1
+30 2 * * * . ~/.bashrc && cd /opt/services/es-journals/ && bash /opt/services/es-journals/scripts/fetch_rxivx_data.sh biorxiv  >> /tmp/biorxiv_cronjob.log 2>&1
