@@ -46,7 +46,7 @@ def create_es_client(host: str, username: str, password: str, ca_certs: str) -> 
     extra_args = {}
     if ca_certs:
         extra_args["ca_certs"] = ca_certs
-    return Elasticsearch([host], basic_auth=(username, password), **extra_args)
+    return Elasticsearch([host], basic_auth=(username, password), verify_certs=False, **extra_args)
 
 def generate_document_id(doc: dict) -> str:
     """

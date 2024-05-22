@@ -3,7 +3,7 @@
 A service for rXiv REST API, such as biorxiv and medrxiv
 
 * Free software: BSD 3 Clause
-* Documentation: https://osl-incubator.github.io/rxiv-rest-api
+* Documentation: https://osl-incubator.github.io/es-journals
 
 ## Features
 

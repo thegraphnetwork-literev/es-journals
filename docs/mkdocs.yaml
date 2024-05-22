@@ -1,5 +1,5 @@
 site_name: rXiv REST API
-site_url: https://osl-incubator.github.io/rxiv-rest-api
+site_url: https://osl-incubator.github.io/es-journals
 repo_url: https://github.com/xmnlab/rxiv-restapi.git
 docs_dir: ./
 site_dir: ../build

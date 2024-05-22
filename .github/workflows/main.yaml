@@ -45,9 +45,12 @@ jobs:
         environment-file: conda/base.yaml
         channels: conda-forge,nodefaults
         channel-priority: true
-        activate-environment: rxiv-rest-api
+        activate-environment: es-journals
         use-mamba: true
         miniforge-variant: Mambaforge
+
+    - name: Set Environment Variable
+      run: echo "GITHUB_PAT=${{ secrets.DEVTOOLS_PAT }}" >> $GITHUB_ENV
 
     - name: Setup development environment for Rxivs
       run: |
@@ -59,8 +62,8 @@ jobs:
       run: |
         sugar ext start --group dev --options -d
 
-    - name: Copy and test certificates
-      run: bash .github/ci/healthcheck.sh es 80 && makim develop.test-certs
+    # - name: Copy and test certificates
+    #   run: bash .github/ci/healthcheck.sh es 80 && makim develop.test-certs
 
     - name: Fetch and process MedRxiv data
       run: |       

@@ -13,7 +13,7 @@ fi
 
 # Activate the Python environment
 activate_path="$(dirname "$(dirname "$conda_path")")/bin/activate"
-source "$activate_path" rxiv-rest-api
+source "$activate_path" es-journals
 
 # Get the current working directory
 path_root=$(pwd)
