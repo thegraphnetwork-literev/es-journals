@@ -45,7 +45,7 @@ jobs:
         environment-file: conda/base.yaml
         channels: conda-forge,nodefaults
         channel-priority: true
-        activate-environment: rxiv-rest-api
+        activate-environment: es-journals
         use-mamba: true
         miniforge-variant: Mambaforge
 

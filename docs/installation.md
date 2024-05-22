@@ -6,7 +6,7 @@ To install rXiv REST API, run this command in your
 terminal:
 
 ```bash
-$ pip install rxiv-rest-api
+$ pip install es-journals
 ```
 
 This is the preferred method to install rXiv REST API,

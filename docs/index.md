@@ -5,7 +5,7 @@
 A service for rXiv REST API, such as biorxiv and medrxiv
 
 * License: BSD 3 Clause
-* Documentation: https://rxiv-rest-api.github.io
+* Documentation: https://es-journals.github.io
 
 ## Features
 
