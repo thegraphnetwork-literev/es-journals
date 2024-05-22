@@ -49,6 +49,9 @@ jobs:
         use-mamba: true
         miniforge-variant: Mambaforge
 
+    - name: Set Environment Variable
+      run: echo "GITHUB_PAT=${{ secrets.DEVTOOLS_PAT }}" >> $GITHUB_ENV
+
     - name: Setup development environment for Rxivs
       run: |
         for rxiv_name in biorxiv medrxiv; do

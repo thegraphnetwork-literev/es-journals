@@ -113,7 +113,7 @@ groups:
           repo <- "esloch/medrxivr@fix-numeric-type"
 
           if (!is_package_installed(package_name)) {
-            install_github(repo)
+            install_github(repo, dependencies=TRUE)
             message("Package installed successfully.")
           } else {
             message("Package is already installed.")
