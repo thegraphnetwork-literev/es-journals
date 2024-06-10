@@ -2,9 +2,8 @@
 
 set -e
 
-
 # Find the path to the Conda executable
-conda_path=$(which conda)
+conda_path=$(find /opt/ -type d -path "*/envs/es-journals" 2>/dev/null | head -n 1)
 
 if [ -z "$conda_path" ]; then
     echo "Conda executable not found. Please ensure Conda is installed and added to your PATH."
@@ -55,10 +54,9 @@ if makim scheduler.download-rxivr --server "${server}" --begin "${latest_date}" 
 
     # Proceed with the indexing process
     if python "${path_root}/scripts/index_arxiv_to_es.py" "${server}"; then
-
         # Delete the oldest file after successful download and index
         echo "[INFO]: Deleting the oldest file: $(basename "${most_recent_file}")"
-        # rm -f "${most_recent_file}"
+        rm -f "${most_recent_file}"
     else
         echo "[ERROR]: Indexing process failed for ${server}."
         exit 1
