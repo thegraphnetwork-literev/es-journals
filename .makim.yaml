@@ -53,12 +53,12 @@ groups:
         run: |
           set -e
 
-          index_data_dir="containers/elasticsearch/data"
-          mkdir -p "${index_data_dir}"
+          index_data_dir="/opt/services/data/elasticsearch"
+      
+          download_dir="${index_data_dir}/rxivx/${{ args.server_name }}/downloaded"
 
-          download_dir="data/rxivx/${{ args.server_name }}/downloaded"
           mkdir -p "${download_dir}"
-
+      
           last_date=$(date -d "yesterday" '+%Y-%m-%d')
           current_date=$(date -d "yesterday" '+%Y-%m-%d')
           output_filename="${{ args.server_name }}_${last_date}_${current_date}.json"

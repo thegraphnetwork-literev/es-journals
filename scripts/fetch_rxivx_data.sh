@@ -15,7 +15,16 @@ activate_path="$(dirname "$(dirname "$conda_path")")/bin/activate"
 source "$activate_path" es-journals
 
 # Get the current working directory
+
 path_root=$(pwd)
+
+# Source the environment variables
+if [ -f $path_root/.env ]; then
+    source $path_root/.env
+else
+    echo ".env file not found"
+    exit 1
+fi
 
 # Check if the server name was provided
 server="$1"
@@ -26,7 +35,8 @@ if [ -z "$server" ]; then
     exit 1
 fi
 
-downloaded_path="${path_root}/data/rxivx/${server}/downloaded"
+# Use the ELASTIC_VOLUME variable
+downloaded_path="$(dirname "$ELASTIC_VOLUME")/rxivx/${server}/downloaded"
 
 # Ensure the directory exists
 if [ ! -d "${downloaded_path}" ]; then
