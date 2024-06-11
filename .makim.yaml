@@ -45,7 +45,7 @@ groups:
       setup-dev-env:
         help: Setup development environment and prepare .env file if it doesn't exist.
         args:
-          server-name:
+          index-name:
             help: Specify the server name to prepare environment for (e.g., 'biorxiv' or 'medrxiv').
             type: string
             required: true
@@ -53,18 +53,18 @@ groups:
         run: |
           set -e
 
-          index_data_dir="containers/elasticsearch/data"
-          mkdir -p "${index_data_dir}"
+          index_data_dir="/opt/services/data/elasticsearch"
+      
+          download_dir="${index_data_dir}/rxivx/${{ args.index_name }}/downloaded"
 
-          download_dir="data/rxivx/${{ args.server_name }}/downloaded"
           mkdir -p "${download_dir}"
-
+      
           last_date=$(date -d "yesterday" '+%Y-%m-%d')
           current_date=$(date -d "yesterday" '+%Y-%m-%d')
-          output_filename="${{ args.server_name }}_${last_date}_${current_date}.json"
+          output_filename="${{ args.index_name }}_${last_date}_${current_date}.json"
           touch "${download_dir}/${output_filename}"
           ls -la ${download_dir}/${output_filename}
-          echo "Prepared development environment for server: ${{ args.server_name }}"
+          echo "Prepared development environment for index: ${{ args.index_name }}"
 
           if [ -f ".env" ]; then
               echo ".env file already exists. Exiting without modifying environment variables."

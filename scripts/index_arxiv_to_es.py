@@ -151,8 +151,15 @@ def find_rxiv_path(index_name: str) -> Path:
     FileNotFoundError
         If no files are found for the given pattern.
     """
-    base_dir = Path(__file__).resolve().parent.parent
-    pattern = f"data/rxivx/{index_name}/downloaded/{index_name}_*.json"
+
+    # Retrieve the base directory from the environment variable
+    ES_HOST_VOLUME = os.getenv("ES_HOST_VOLUME")
+    if not ES_HOST_VOLUME:
+        raise EnvironmentError("ES_HOST_VOLUME environment variable is not set.")
+
+    # Construct the path to the downloaded files
+    base_dir = Path(ES_HOST_VOLUME).parent / "rxivx" / index_name / "downloaded"
+    pattern = f"{index_name}_*.json"
     files = list(base_dir.glob(pattern))
 
     if not files:

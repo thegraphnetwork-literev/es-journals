@@ -12,9 +12,18 @@ services:
       - discovery.type=single-node
       - node.name=es
       - ELASTIC_PASSWORD=${ES_PASSWORD}
+      - ES_HOST_VOLUME=${ES_HOST_VOLUME}
       - bootstrap.memory_lock=true
       - xpack.security.enabled=false
       - xpack.security.enrollment.enabled=false
+    volumes:
+      - type: bind
+        source: ../containers/init-scripts
+        target: /usr/share/elasticsearch/init-scripts
+        read_only: true
+      - type: bind
+        source: ${ES_HOST_VOLUME}
+        target: /usr/share/elasticsearch/data
     ports:
       - 9200:9200
     healthcheck:
