@@ -153,12 +153,12 @@ def find_rxiv_path(index_name: str) -> Path:
     """
 
     # Retrieve the base directory from the environment variable
-    elastic_volume = os.getenv("ELASTIC_VOLUME")
-    if not elastic_volume:
-        raise EnvironmentError("ELASTIC_VOLUME environment variable is not set.")
+    ES_HOST_VOLUME = os.getenv("ES_HOST_VOLUME")
+    if not ES_HOST_VOLUME:
+        raise EnvironmentError("ES_HOST_VOLUME environment variable is not set.")
 
     # Construct the path to the downloaded files
-    base_dir = Path(elastic_volume).parent / "rxivx" / index_name / "downloaded"
+    base_dir = Path(ES_HOST_VOLUME).parent / "rxivx" / index_name / "downloaded"
     pattern = f"{index_name}_*.json"
     files = list(base_dir.glob(pattern))
 

@@ -12,7 +12,7 @@ services:
         target: /usr/share/elasticsearch/init-scripts
         read_only: true
       - type: bind
-        source: ${ELASTIC_VOLUME}
+        source: ${ES_HOST_VOLUME}
         target: /usr/share/elasticsearch/data
     ports:
       - "${ES_PORT}:9200"
