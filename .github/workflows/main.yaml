@@ -55,7 +55,7 @@ jobs:
     - name: Setup development environment for Rxivs
       run: |
         for rxiv_name in biorxiv medrxiv; do
-            makim develop.setup-dev-env --server-name $rxiv_name
+            makim develop.setup-dev-env --index-name $rxiv_name
         done
 
     - name: Start Elasticsearch

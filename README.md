@@ -17,11 +17,11 @@ This application is designed to fetch the latest papers from the BioRxiv and Med
 
 ## Usage
 
-Run the following command to fetch the latest papers from the desired server:
+Run the following command to fetch the latest papers from the desired index database server:
    ```
-   ./src/fetch_rxivx_data.sh <server_name>
+   ./src/fetch_rxivx_data.sh <index_name>
    ```
-   Replace `<server_name>` with either "biorxiv" or "medrxiv" based on the server you want to fetch the papers from.
+   Replace `<index_name>` with either "biorxiv" or "medrxiv" based on the database server you want to fetch the papers from.
 
 ---
 
