@@ -36,9 +36,9 @@ if [ -z "$SERVER" ]; then
 fi
 
 # Use the ES_HOST_VOLUME variable
-DOWNLOADED_PATH="$(dirname "$ES_HOST_VOLUME")/rxivx/${SERVER}/downloaded"
+DOWNLOADED_PATH="$(dirname "${ES_HOST_VOLUME}")/rxivx/${SERVER}/downloaded"
 
-echo "[INTO]: The path to download has been generated ${DOWNLOADED_PATH}..."
+echo "[INFO]: The path to download has been generated ${DOWNLOADED_PATH}..."
 
 # Ensure the directory exists
 if [ ! -d "${DOWNLOADED_PATH}" ]; then
