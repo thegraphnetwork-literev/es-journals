@@ -21,7 +21,7 @@ env:
   # Host System Configuration
   HOST_UID: 1000
   HOST_GID: 1000
-  ELASTIC_VOLUME: ../containers/elasticsearch/data
+  ELASTIC_VOLUME: /opt/services/data/elasticsearch
 
 jobs:
   build:

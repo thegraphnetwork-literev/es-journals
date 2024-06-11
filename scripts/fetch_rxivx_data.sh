@@ -3,7 +3,7 @@
 set -e
 
 # Find the path to the Conda executable
-conda_path=$(find /opt/ -type d -path "*/envs/es-journals" 2>/dev/null | head -n 1)
+conda_path=$(find / -type d -path "*/envs/es-journals" 2>/dev/null | head -n 1)
 
 if [ -z "$conda_path" ]; then
     echo "Conda executable not found. Please ensure Conda is installed and added to your PATH."
