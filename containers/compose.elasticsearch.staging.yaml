@@ -1,10 +1,8 @@
-version: "3.9"
-
 services:
   es:
     hostname: es
     container_name: es
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     user: "1000:1000"  # Set the UID:GID to run the container
     env_file:
       ../.env
@@ -27,7 +25,7 @@ services:
     ports:
       - 9200:9200
     healthcheck:
-      test: ["CMD-SHELL", "curl -s -k ${ES_HOSTNAME} | grep -q 'missing authentication credentials'"]
+      test: ["CMD-SHELL", "curl -s -k http://localhost:9200"]
     networks:
       - literev_literev
 

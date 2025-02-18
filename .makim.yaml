@@ -1,197 +1,182 @@
-version: 1.0
-groups:
-  containers:
-    tasks:
-      get-ip:
-        help: Get the IP from a container-ID
-        args:
-          container-id:
-            help: The container-ID
-            type: string
-            required: true
-        shell: bash
-        run: |
-          docker inspect \
-            -f {% raw -%}"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}"{%- endraw %} \
-            ${{ args.container_id }}
+    groups:
+      containers:
+        tasks:
+          get-ip:
+            help: Get the IP from a container-ID
+            args:
+              container-id:
+                help: The container-ID
+                type: string
+                required: true
+            backend: bash
+            run: |
+              docker inspect \
+                -f {% raw -%}"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}"{%- endraw %} \
+                ${{ args.container_id }}
 
-  develop:
-    tasks:
-      test-certs:
-        env-file: .env
-        help: Generate and copy certs
-        shell: bash
-        run: |
-          mkdir -p containers/esconfig/certs
-          if docker cp es:/usr/share/elasticsearch/config/certs/http_ca.crt ./containers/esconfig/certs/; then
-            echo "Certificate copied successfully."
-            curl --cacert ./containers/esconfig/certs/http_ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
-          else
-            echo "Error: Could not find the certificate in the container."
-          fi
-
-      count-docs-in-index:
-        help: |
-          Download data from BioRxiv/MedRxiv API within a specified date range.
-        args:
-          index-name:
-            help: Specify the index name (e.g., 'biorxiv' or 'medrxiv')
-            type: string
-            required: true      
-        shell: bash
-        run: |
-          python scripts/es_index_doc_counter.py ${{ args.index_name }}
-
-      setup-dev-env:
-        help: Setup development environment and prepare .env file if it doesn't exist.
-        args:
-          index-name:
-            help: Specify the server name to prepare environment for (e.g., 'biorxiv' or 'medrxiv').
-            type: string
-            required: true
-        shell: bash
-        run: |
-          set -e
-
-          index_data_dir="/opt/services/data/elasticsearch"
-      
-          download_dir="${index_data_dir}/rxivx/${{ args.index_name }}/downloaded"
-
-          mkdir -p "${download_dir}"
-      
-          last_date=$(date -d "yesterday" '+%Y-%m-%d')
-          current_date=$(date -d "yesterday" '+%Y-%m-%d')
-          output_filename="${{ args.index_name }}_${last_date}_${current_date}.json"
-          touch "${download_dir}/${output_filename}"
-          ls -la ${download_dir}/${output_filename}
-          echo "Prepared development environment for index: ${{ args.index_name }}"
-
-          if [ -f ".env" ]; then
-              echo ".env file already exists. Exiting without modifying environment variables."
-          else
-              env_template="./.env.tpl"
-              if [ ! -f "${env_template}" ]; then
-                  echo "The template file ${env_template} does not exist."
-                  exit 1
+      develop:
+        tasks:
+          test-certs:
+            env-file: .env
+            help: Generate and copy certs
+            backend: bash
+            run: |
+              mkdir -p containers/esconfig/certs
+              if docker cp es:/usr/share/elasticsearch/config/certs/http_ca.crt ./containers/esconfig/certs/; then
+                echo "Certificate copied successfully."
+                curl --cacert ./containers/esconfig/certs/http_ca.crt -u elastic:${{ env.ES_PASSWORD }} https://localhost:9200/
+              else
+                echo "Error: Could not find the certificate in the container."
               fi
-              envsubst < "${env_template}" > ".env"
-              echo "Environment variables prepared and saved to .env"
-          fi
 
-  scheduler:
-    tasks:
-      download-rxivr:
-        help: |
-          Download data from BioRxiv/MedRxiv API within a specified date range.  
-        args:
-          server:
-            help: Specify the server to download (e.g., 'biorxiv' or 'medrxiv')
-            type: string
-            required: true
-          begin:
-            help: Specify the start date in YYYY-MM-DD format
-            type: string
-            required: true
-          end:
-            help: Specify the end date in YYYY-MM-DD format
-            type: string
-            required: true
-          target:
-            help: Path to save the JSON file (e.g., 'data/')
-            type: string
-            required: true
-        shell: Rscript
-        run: |
-          library(devtools)
+          count-docs-in-index:
+            help: |
+              Download data from BioRxiv/MedRxiv API within a specified date range.
+            args:
+              index-name:
+                help: Specify the index name (e.g., 'biorxiv' or 'medrxiv')
+                type: string
+                required: true
+            backend: bash
+            run: |
+              python scripts/es_index_doc_counter.py ${{ args.index_name }}
 
-          # Check if the package is installed
-          is_package_installed <- function(pkg) {
-            pkg %in% rownames(installed.packages())
-          }
+          setup-dev-env:
+            help: Setup development environment and prepare .env file if it doesn't exist.
+            args:
+              index-name:
+                help: Specify the server name to prepare environment for (e.g., 'biorxiv' or 'medrxiv').
+                type: string
+                required: true
+            backend: bash
+            run: |
+              set -e
 
-          package_name <- "medrxivr"
-          repo <- "esloch/medrxivr@fix-numeric-type"
+              index_data_dir="/opt/services/data/elasticsearch"
 
-          if (!is_package_installed(package_name)) {
-            install_github(repo, dependencies=TRUE)
-            message("Package installed successfully.")
-          } else {
-            message("Package is already installed.")
-          }
+              download_dir="${index_data_dir}/rxivx/${{ args.index_name }}/downloaded"
 
-          library(medrxivr)
-          library(jsonlite)
+              mkdir -p "${download_dir}"
 
-          print("Starting download data from: ${{ args.server }}")
+              last_date=$(date -d "yesterday" '+%Y-%m-%d')
+              current_date=$(date -d "yesterday" '+%Y-%m-%d')
+              output_filename="${{ args.index_name }}_${last_date}_${current_date}.json"
+              touch "${download_dir}/${output_filename}"
+              ls -la ${download_dir}/${output_filename}
+              echo "Prepared development environment for index: ${{ args.index_name }}"
 
-          biorxiv_data <- mx_api_content(
-            server = '${{ args.server }}',
-            from_date = "${{ args.begin }}",
-            to_date = "${{ args.end }}"
-          )
+              if [ -f ".env" ]; then
+                  echo ".env file already exists. Exiting without modifying environment variables."
+              else
+                  env_template="./.env.tpl"
+                  if [ ! -f "${env_template}" ]; then
+                      echo "The template file ${env_template} does not exist."
+                      exit 1
+                  fi
+                  envsubst < "${env_template}" > ".env"
+                  echo "Environment variables prepared and saved to .env"
+              fi
 
-          json_data <- toJSON(biorxiv_data, pretty = TRUE)
+      scheduler:
+        tasks:
+          download-rxivr:
+            help: |
+              Download data from BioRxiv/MedRxiv API within a specified date range.
+            args:
+              server:
+                help: Specify the server to download (e.g., 'biorxiv' or 'medrxiv')
+                type: string
+                required: true
+              begin:
+                help: Specify the start date in YYYY-MM-DD format
+                type: string
+                required: true
+              end:
+                help: Specify the end date in YYYY-MM-DD format
+                type: string
+                required: true
+              target:
+                help: Path to save the JSON file (e.g., 'data/')
+                type: string
+                required: true
+            backend: Rscript
+            run: |
+              library(devtools)
 
-          json_file_path <- "${{ args.target }}${{ args.server }}_${{ args.begin }}_${{ args.end }}.json"
-          writeLines(json_data, json_file_path)
+              # Check if the package is installed
+              is_package_installed <- function(pkg) {
+                pkg %in% rownames(installed.packages())
+              }
 
-          cat("Data object stored to:", "${{ args.server }}", "json file \n")
-  
-      setup-cron:
-        help: Setup cron jobs for the develop user
-        shell: bash
-        run: |
-          CRON_PATH="/opt/services/es-journals/scripts/cronjobs"
+              package_name <- "medrxivr"
+              repo <- "ropensci/medrxivr@master"
 
-          # Check if cronjob file exists
-          if [ ! -f "$CRON_PATH" ]; then
-            echo "Cronjob file does not exist at $CRON_PATH. Please create it first."
-            exit 1
-          fi
+              if (!is_package_installed(package_name)) {
+                install_github(repo, dependencies=TRUE)
+                message("Package installed successfully.")
+              } else {
+                message("Package is already installed.")
+              }
 
-          # Add cron taks to develop user
-          crontab -u devops $CRON_PATH
+              library(medrxivr)
+              library(jsonlite)
 
-          echo "Cron jobs for LiteRev Elasticsearch have been set up successfully for user develop."
+              print("Starting download data from: ${{ args.server }}")
 
-  clean:
-    tasks:
-      all:
-        help: Clean unnecessary temporary files
-        run: |
-          rm -fr build/
-          rm -fr dist/
-          rm -fr .eggs/
-          find . -name '*.egg-info' -exec rm -fr {} +
-          find . -name '*.egg' -exec rm -f {} +
-          find . -name '*.pyc' -exec rm -f {} +
-          find . -name '*.pyo' -exec rm -f {} +
-          find . -name '__pycache__' -exec rm -fr {} +
-          find . -name '*~' -exec rm -f {} +
-          rm -f .coverage
-          rm -fr htmlcov/
-          rm -fr .pytest_cache
-          rm -fr .mypy_cache
-          rm -fr .ruff_cache
+              rxiv_data <- mx_api_content(
+                server = '${{ args.server }}',
+                from_date = "${{ args.begin }}",
+                to_date = "${{ args.end }}"
+              )
 
-  docs:
-    tasks:
-      build:
-        help: Build documentation
-        run: |
-          mkdocs build --config-file docs/mkdocs.yaml
+              json_data <- toJSON(rxiv_data, pretty = TRUE)
 
-      preview:
-        help: Preview documentation page locally
-        dependencies:
-          - task: docs.build
-        run: |
-          mkdocs build --config-file docs/mkdocs.yaml
+              json_file_path <- "${{ args.target }}${{ args.server }}_${{ args.begin }}_${{ args.end }}.json"
+              writeLines(json_data, json_file_path)
 
-  tests:
-    tasks:
-      linter:
-        help: Run linter tools
-        run: |
-          pre-commit install
-          pre-commit run --all-files --verbose
+              cat("Data object stored to:", "${{ args.server }}", "json file \n")
+      
+          setup-cron:
+            help: Setup cron jobs for the develop user
+            backend: bash
+            run: |
+              CRON_PATH="/opt/services/es-journals/scripts/cronjobs"
+
+              # Check if cronjob file exists
+              if [ ! -f "$CRON_PATH" ]; then
+                echo "Cronjob file does not exist at $CRON_PATH. Please create it first."
+                exit 1
+              fi
+
+              # Add cron taks to develop user
+              crontab -u devops $CRON_PATH
+
+              echo "Cron jobs for LiteRev Elasticsearch have been set up successfully for user develop."
+
+      clean:
+        tasks:
+          all:
+            help: Clean unnecessary temporary files
+            run: |
+              rm -fr build/
+              rm -fr dist/
+              rm -fr .eggs/
+              find . -name '*.egg-info' -exec rm -fr {} +
+              find . -name '*.egg' -exec rm -f {} +
+              find . -name '*.pyc' -exec rm -f {} +
+              find . -name '*.pyo' -exec rm -f {} +
+              find . -name '__pycache__' -exec rm -fr {} +
+              find . -name '*~' -exec rm -f {} +
+              rm -f .coverage
+              rm -fr htmlcov/
+              rm -fr .pytest_cache
+              rm -fr .mypy_cache
+              rm -fr .ruff_cache
+
+      tests:
+        tasks:
+          linter:
+            help: Run linter tools
+            run: |
+              pre-commit install
+              pre-commit run --all-files --verbose
