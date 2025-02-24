@@ -10,8 +10,9 @@ env:
   # Elasticsearch Configuration
   STACK_VERSION: 8.17.2
   CLUSTER_NAME: docker-cluster
-  MEM_LIMIT: 1073741824
+  MEM_LIMIT: 4g
   LICENSE: basic
+  SSL_VERIFY_MODE: certificate
   #
   ES_PORT: 9200
   ES_HOSTNAME: https://localhost:9200
@@ -52,6 +53,15 @@ jobs:
     - name: Set Environment Variable
       run: echo "GITHUB_PAT=${{ secrets.DEVTOOLS_PAT }}" >> $GITHUB_ENV
 
+    - name: Check if poetry.lock is updated
+      run: poetry check
+
+    - name: Install dependencies
+      run: poetry install
+
+    - name: Clean-up
+      run: makim clean.tmp
+
     - name: Setup development environment for Rxivs
       run: |
         for rxiv_name in biorxiv medrxiv; do
@@ -60,15 +70,19 @@ jobs:
 
     - name: Start Elasticsearch
       run: |
-        sugar ext start --group dev --options -d
-
-    # - name: Copy and test certificates
-    #   run: bash .github/ci/healthcheck.sh es 80 && makim develop.test-certs
+        sugar compose ext start --group dev --options -d
 
     - name: Fetch and process MedRxiv data
-      run: |       
+      run: |
         bash scripts/fetch_rxivx_data.sh medrxiv
 
     - name: Count documents in MedRxiv index
-      run: |       
+      run: |
         makim develop.count-docs-in-index --index-name medrxiv
+
+    - name: Count documents in MedRxiv index
+      run: |
+        makim tests --index-name medrxiv
+
+    - name: Run tests
+      run: makim tests.unittest
