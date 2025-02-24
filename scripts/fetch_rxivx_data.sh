@@ -19,8 +19,8 @@ source "$activate_path" es-journals
 PATH_ROOT=$(pwd)
 
 # Source the environment variables
-if [ -f $PATH_ROOT/.env ]; then
-    source $PATH_ROOT/.env
+if [ -f "$PATH_ROOT"/.env ]; then
+    source "$PATH_ROOT"/.env
 else
     echo ".env file not found"
     exit 1
@@ -57,7 +57,6 @@ fi
 # Extract dates for filename construction
 latest_date=$(basename "$most_recent_file" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | tail -1)
 current_date=$(date +'%Y-%m-%d')
-output_filename="${INDEX_NAME}_${latest_date}_${current_date}.json"
 
 # Start the download process
 echo "[INFO]: Starting the download process for ${INDEX_NAME}..."
