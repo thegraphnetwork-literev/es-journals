@@ -2,17 +2,29 @@
 
 set -e
 
-# Find the path to the Conda executable
-CONDA_PATH=$(find / -type d -path "*/envs/es-journals" 2>/dev/null | head -n 1)
+# Detect Conda or Micromamba
+if command -v micromamba &> /dev/null; then
+    echo "Using Micromamba..."
+    eval "$(micromamba shell hook --shell bash)"
+    micromamba activate es-journals
 
-if [ -z "$CONDA_PATH" ]; then
-    echo "Conda executable not found. Please ensure Conda is installed and added to your PATH."
+elif command -v conda &> /dev/null; then
+    echo "Using Conda-based environment (Miniconda/Miniforge)..."
+
+    # Find Conda base path
+    CONDA_BASE=$(conda info --base)
+
+    if [ -z "$CONDA_BASE" ]; then
+        echo "Error: Conda installation not found."
+        exit 1
+    fi
+
+    source "$CONDA_BASE/etc/profile.d/conda.sh"
+    conda activate es-journals
+else
+    echo "Error: Neither Micromamba nor Conda (Miniconda/Miniforge) is installed."
     exit 1
 fi
-
-# Activate the Python environment
-activate_path="$(dirname "$(dirname "$CONDA_PATH")")/bin/activate"
-source "$activate_path" es-journals
 
 # Get the current working directory
 
