@@ -7,6 +7,7 @@ on:
     branches: [ main ]
 
 env:
+  ENV: dev
   # Elasticsearch Configuration
   STACK_VERSION: 8.17.2
   CLUSTER_NAME: docker-cluster
@@ -53,6 +54,10 @@ jobs:
     - name: Set Environment Variable
       run: echo "GITHUB_PAT=${{ secrets.DEVTOOLS_PAT }}" >> $GITHUB_ENV
 
+    - name: Create environment variables files
+      run: |
+        envsubst < .env.tpl > .env
+
     - name: Check if poetry.lock is updated
       run: poetry check
 
@@ -70,7 +75,7 @@ jobs:
 
     - name: Start Elasticsearch
       run: |
-        sugar compose ext start --group dev --options -d
+        sugar compose-ext start --options -d
 
     - name: Fetch and process MedRxiv data
       run: |
