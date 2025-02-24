@@ -14,9 +14,8 @@ dependencies:
   - shellcheck
   - typer
   - pip:
-    - compose-go >=2.20.2,<2.31.0
+    - compose-go
     - makim==1.20.0
     - containers-sugar
     - pytest
     - tqdm
-  
