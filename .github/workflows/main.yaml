@@ -16,7 +16,7 @@ env:
   SSL_VERIFY_MODE: certificate
   #
   ES_PORT: 9200
-  ES_HOSTNAME: https://localhost:9200
+  ES_HOSTNAME: http://staging.literev.com:9200
   ES_USERNAME: elastic
   ES_PASSWORD: worksfine
   ES_CERTIF: containers/esconfig/certs/http_ca.crt
