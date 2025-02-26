@@ -17,11 +17,13 @@ ES_CERTIF = os.getenv("ES_CERTIF", "")
 
 def create_es_client() -> Elasticsearch:
     """Create an Elasticsearch client with proper parameters."""
+    is_https = ES_HOST_URL.startswith("https://")
+
     return Elasticsearch(
         hosts=[ES_HOST_URL],
         basic_auth=(ES_USERNAME, ES_PASSWORD),
-        verify_certs=bool(ES_CERTIF),
-        ca_certs=ES_CERTIF if ES_CERTIF else None,  # type: ignore[arg-type]
+        verify_certs=is_https,
+        ca_certs=ES_CERTIF if is_https else None,  # type: ignore[arg-type]
     )
 
 

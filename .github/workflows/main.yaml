@@ -85,9 +85,5 @@ jobs:
       run: |
         makim develop.count-docs-in-index --index-name medrxiv
 
-    - name: Count documents in MedRxiv index
-      run: |
-        makim tests --index-name medrxiv
-
     - name: Run tests
       run: makim tests.unittest
