@@ -50,11 +50,13 @@ def create_es_client(
     Elasticsearch
         An instance of Elasticsearch client configured with the given credentials.
     """
+    is_https = host.startswith("https://")
+
     return Elasticsearch(
         hosts=[host],
         basic_auth=(username, password),
-        verify_certs=True if ca_certs else False,
-        ca_certs=ca_certs if ca_certs else None,  # type: ignore[arg-type]
+        verify_certs=is_https,
+        ca_certs=ca_certs if is_https else None,  # type: ignore[arg-type]
     )
 
 
