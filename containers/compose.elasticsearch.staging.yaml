@@ -1,21 +1,18 @@
-version: "3.9"
-
 services:
   es:
-    hostname: es
     container_name: es
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
-    user: "1000:1000"  # Set the UID:GID to run the container
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    user: "1000:1000" # Set the UID:GID to run the container
     env_file:
-      ../.env
+      - ../.env
     environment:
       - discovery.type=single-node
       - node.name=es
       - ELASTIC_PASSWORD=${ES_PASSWORD}
-      - ES_HOST_VOLUME=${ES_HOST_VOLUME}
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g  # Ensure proper memory allocation
       - bootstrap.memory_lock=true
-      - xpack.security.enabled=false
-      - xpack.security.enrollment.enabled=false
+      - "xpack.security.enabled=false"
+      - "xpack.security.enrollment.enabled=false"
     volumes:
       - type: bind
         source: ../containers/init-scripts
@@ -25,12 +22,22 @@ services:
         source: ${ES_HOST_VOLUME}
         target: /usr/share/elasticsearch/data
     ports:
-      - 9200:9200
+      - "9200:9200"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
     healthcheck:
-      test: ["CMD-SHELL", "curl -s -k ${ES_HOSTNAME} | grep -q 'missing authentication credentials'"]
+      test: ["CMD-SHELL", "curl -s -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+      start_period: 20s
     networks:
       - literev_literev
-
 
 networks:
   literev_literev:

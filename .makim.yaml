@@ -1,5 +1,46 @@
-version: 1.0
+backend: bash
+env-file: .env
+env:
+  DOCKER_BUILDKIT: "0"
 groups:
+  clean:
+    tasks:
+      tmp:
+        help: remove build artifacts, compiled files, and cache
+        backend: bash
+        run: |
+          find . -name '*.egg-info' -exec rm -rf {} +
+          find . -name '*.egg' -exec rm -f {} +
+          find . -name '*.pyc' -exec rm -f {} +
+          find . -name '*.pyo' -exec rm -f {} +
+          find . -name '__pycache__' -exec rm -rf {} +
+          find . -name '*~' -exec rm -f {} +
+          rm -rf build/
+          rm -rf dist/
+          rm -rf .eggs/
+          rm -f .coverage
+          rm -rf htmlcov/
+          rm -rf .pytest_cache
+          rm -rf .mypy_cache
+          rm -rf .ruff_cache
+
+  tests:
+    tasks:
+      lint:
+        help: Run linter tools
+        hooks:
+          pre-run:
+            - task: clean.tmp
+        run: |
+          pre-commit install
+          pre-commit run --all-files --verbose
+
+      unittest:
+        help: Run tests with pytest
+        env-file: .env
+        run: |
+          pytest "tests/"
+
   containers:
     tasks:
       get-ip:
@@ -9,7 +50,7 @@ groups:
             help: The container-ID
             type: string
             required: true
-        shell: bash
+        backend: bash
         run: |
           docker inspect \
             -f {% raw -%}"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}"{%- endraw %} \
@@ -20,7 +61,7 @@ groups:
       test-certs:
         env-file: .env
         help: Generate and copy certs
-        shell: bash
+        backend: bash
         run: |
           mkdir -p containers/esconfig/certs
           if docker cp es:/usr/share/elasticsearch/config/certs/http_ca.crt ./containers/esconfig/certs/; then
@@ -37,8 +78,8 @@ groups:
           index-name:
             help: Specify the index name (e.g., 'biorxiv' or 'medrxiv')
             type: string
-            required: true      
-        shell: bash
+            required: true
+        backend: bash
         run: |
           python scripts/es_index_doc_counter.py ${{ args.index_name }}
 
@@ -49,16 +90,16 @@ groups:
             help: Specify the server name to prepare environment for (e.g., 'biorxiv' or 'medrxiv').
             type: string
             required: true
-        shell: bash
+        backend: bash
         run: |
           set -e
 
           index_data_dir="/opt/services/data/elasticsearch"
-      
+
           download_dir="${index_data_dir}/rxivx/${{ args.index_name }}/downloaded"
 
           mkdir -p "${download_dir}"
-      
+
           last_date=$(date -d "yesterday" '+%Y-%m-%d')
           current_date=$(date -d "yesterday" '+%Y-%m-%d')
           output_filename="${{ args.index_name }}_${last_date}_${current_date}.json"
@@ -82,7 +123,7 @@ groups:
     tasks:
       download-rxivr:
         help: |
-          Download data from BioRxiv/MedRxiv API within a specified date range.  
+          Download data from BioRxiv/MedRxiv API within a specified date range.
         args:
           server:
             help: Specify the server to download (e.g., 'biorxiv' or 'medrxiv')
@@ -100,7 +141,7 @@ groups:
             help: Path to save the JSON file (e.g., 'data/')
             type: string
             required: true
-        shell: Rscript
+        backend: Rscript
         run: |
           library(devtools)
 
@@ -110,7 +151,7 @@ groups:
           }
 
           package_name <- "medrxivr"
-          repo <- "esloch/medrxivr@fix-numeric-type"
+          repo <- "ropensci/medrxivr@master"
 
           if (!is_package_installed(package_name)) {
             install_github(repo, dependencies=TRUE)
@@ -124,22 +165,22 @@ groups:
 
           print("Starting download data from: ${{ args.server }}")
 
-          biorxiv_data <- mx_api_content(
+          rxiv_data <- mx_api_content(
             server = '${{ args.server }}',
             from_date = "${{ args.begin }}",
             to_date = "${{ args.end }}"
           )
 
-          json_data <- toJSON(biorxiv_data, pretty = TRUE)
+          json_data <- toJSON(rxiv_data, pretty = TRUE)
 
           json_file_path <- "${{ args.target }}${{ args.server }}_${{ args.begin }}_${{ args.end }}.json"
           writeLines(json_data, json_file_path)
 
           cat("Data object stored to:", "${{ args.server }}", "json file \n")
-  
+
       setup-cron:
         help: Setup cron jobs for the develop user
-        shell: bash
+        backend: bash
         run: |
           CRON_PATH="/opt/services/es-journals/scripts/cronjobs"
 
@@ -153,45 +194,3 @@ groups:
           crontab -u devops $CRON_PATH
 
           echo "Cron jobs for LiteRev Elasticsearch have been set up successfully for user develop."
-
-  clean:
-    tasks:
-      all:
-        help: Clean unnecessary temporary files
-        run: |
-          rm -fr build/
-          rm -fr dist/
-          rm -fr .eggs/
-          find . -name '*.egg-info' -exec rm -fr {} +
-          find . -name '*.egg' -exec rm -f {} +
-          find . -name '*.pyc' -exec rm -f {} +
-          find . -name '*.pyo' -exec rm -f {} +
-          find . -name '__pycache__' -exec rm -fr {} +
-          find . -name '*~' -exec rm -f {} +
-          rm -f .coverage
-          rm -fr htmlcov/
-          rm -fr .pytest_cache
-          rm -fr .mypy_cache
-          rm -fr .ruff_cache
-
-  docs:
-    tasks:
-      build:
-        help: Build documentation
-        run: |
-          mkdocs build --config-file docs/mkdocs.yaml
-
-      preview:
-        help: Preview documentation page locally
-        dependencies:
-          - task: docs.build
-        run: |
-          mkdocs build --config-file docs/mkdocs.yaml
-
-  tests:
-    tasks:
-      linter:
-        help: Run linter tools
-        run: |
-          pre-commit install
-          pre-commit run --all-files --verbose

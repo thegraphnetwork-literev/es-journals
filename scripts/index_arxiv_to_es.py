@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 import json
 import os
 import time
 from pathlib import Path
 import hashlib
+from typing import Any
 
 import typer
-
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch, exceptions
 from loguru import logger
@@ -16,14 +18,19 @@ load_dotenv()
 app = typer.Typer()
 
 index_name_placeholder = "index_name"
-log_filename = f"/tmp/elasticrxivx_{index_name_placeholder}_{time.strftime('%Y%m%d-%H%M%S')}.log"
+log_filename = (
+    f"/tmp/elasticrxivx_{index_name_placeholder}_{time.strftime('%Y%m%d-%H%M%S')}.log"
+)
 
 ES_HOSTNAME = os.getenv("ES_HOSTNAME", "https://localhost:9200")
 ES_USERNAME = os.getenv("ES_USERNAME", "elastic")
 ES_PASSWORD = os.getenv("ES_PASSWORD", "")
 ES_CERTIF = os.getenv("ES_CERTIF", "")
 
-def create_es_client(host: str, username: str, password: str, ca_certs: str) -> Elasticsearch:
+
+def create_es_client(
+    host: str, username: str, password: str, ca_certs: str | None
+) -> Elasticsearch:
     """
     Create an Elasticsearch client using the provided credentials.
 
@@ -35,20 +42,25 @@ def create_es_client(host: str, username: str, password: str, ca_certs: str) -> 
         The username for Elasticsearch authentication.
     password : str
         The password for Elasticsearch authentication.
-    ca_certs : str
-        Path to a CA bundle to verify SSL certificates.
+    ca_certs : str | None
+        Path to a CA bundle to verify SSL certificates or None.
 
     Returns
     -------
     Elasticsearch
         An instance of Elasticsearch client configured with the given credentials.
     """
-    extra_args = {}
-    if ca_certs:
-        extra_args["ca_certs"] = ca_certs
-    return Elasticsearch([host], basic_auth=(username, password), verify_certs=False, **extra_args)
+    is_https = host.startswith("https://")
 
-def generate_document_id(doc: dict) -> str:
+    return Elasticsearch(
+        hosts=[host],
+        basic_auth=(username, password),
+        verify_certs=is_https,
+        ca_certs=ca_certs if is_https else None,  # type: ignore[arg-type]
+    )
+
+
+def generate_document_id(doc: dict[str, Any]) -> str:
     """
     Generate a unique document ID based on the document's content.
 
@@ -63,7 +75,8 @@ def generate_document_id(doc: dict) -> str:
         A unique identifier for the document.
     """
     doc_string = json.dumps(doc, sort_keys=True)
-    return hashlib.sha256(doc_string.encode('utf-8')).hexdigest()
+    return hashlib.sha256(doc_string.encode("utf-8")).hexdigest()
+
 
 def document_exists(es_client: Elasticsearch, index_name: str, doc_id: str) -> bool:
     """
@@ -84,9 +97,10 @@ def document_exists(es_client: Elasticsearch, index_name: str, doc_id: str) -> b
         True if the document exists, False otherwise.
     """
     try:
-        return es_client.exists(index=index_name, id=doc_id)
+        return bool(es_client.exists(index=index_name, id=doc_id))
     except exceptions.NotFoundError:
         return False
+
 
 def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -> None:
     """
@@ -109,7 +123,7 @@ def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -
     try:
         logger.info(f"Starting indexing {file_path}")
 
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             data = json.load(file)
 
         successful_docs, skipped_docs = 0, 0
@@ -117,13 +131,11 @@ def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -
             for doc in data:
                 doc_id = generate_document_id(doc)
                 if not document_exists(es_client, index_name, doc_id):
-                    # logger.info(f"Indexing doc id {doc_id}")
                     es_client.index(index=index_name, id=doc_id, document=doc)
                     successful_docs += 1
                 else:
                     skipped_docs += 1
-                
-                # logger.info(f"Indexing Summary: {successful_docs} new, {skipped_docs} skipped.")
+
                 pbar.update(1)
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse JSON data from {file_path}: {e}")
@@ -131,6 +143,7 @@ def index_json_data(es_client: Elasticsearch, file_path: str, index_name: str) -
     except Exception as e:
         logger.error(f"Failed to index data for {index_name}: {e}")
         raise Exception(f"Failed to index data for {index_name}: {e}")
+
 
 def find_rxiv_path(index_name: str) -> Path:
     """
@@ -152,12 +165,10 @@ def find_rxiv_path(index_name: str) -> Path:
         If no files are found for the given pattern.
     """
 
-    # Retrieve the base directory from the environment variable
     ES_HOST_VOLUME = os.getenv("ES_HOST_VOLUME")
     if not ES_HOST_VOLUME:
         raise EnvironmentError("ES_HOST_VOLUME environment variable is not set.")
 
-    # Construct the path to the downloaded files
     base_dir = Path(ES_HOST_VOLUME).parent / "rxivx" / index_name / "downloaded"
     pattern = f"{index_name}_*.json"
     files = list(base_dir.glob(pattern))
@@ -169,6 +180,7 @@ def find_rxiv_path(index_name: str) -> Path:
     logger.info(f"find_rxiv_path: Found {most_recent_file}")
 
     return most_recent_file
+
 
 def validate_index_name(index_name: str) -> str:
     """
@@ -191,8 +203,11 @@ def validate_index_name(index_name: str) -> str:
     """
     valid_indices = ["biorxiv", "medrxiv"]
     if index_name not in valid_indices:
-        raise typer.BadParameter("Invalid index name: {index_name}. Valid options are 'biorxiv' or 'medrxiv'.")
+        raise typer.BadParameter(
+            f"Invalid index name: {index_name}. Valid options are 'biorxiv' or 'medrxiv'."
+        )
     return index_name
+
 
 @app.command()
 def main(index_name: str = typer.Argument(..., callback=validate_index_name)):
@@ -217,6 +232,7 @@ def main(index_name: str = typer.Argument(..., callback=validate_index_name)):
         logger.info(f"Completed indexing for {index_name}.")
     except Exception as e:
         logger.error(f"Indexing process failed for {index_name}: {e}")
+
 
 if __name__ == "__main__":
     app()

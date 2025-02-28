@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from elasticsearch import Elasticsearch
 import typer
@@ -65,7 +67,7 @@ def get_total_documents_in_index(es: Elasticsearch, index_name: str) -> int:
 def main(
     index_name: str = typer.Argument(
         ..., help="The name of the Elasticsearch index to query."
-    )
+    ),
 ):
     """
     Retrieve and print the total number of documents in the specified Elasticsearch index.
