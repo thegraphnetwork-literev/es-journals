@@ -75,7 +75,7 @@ jobs:
 
     - name: Start Elasticsearch
       run: |
-        sugar compose-ext start --options -d
+        sugar compose-ext start --options "-d"
 
     - name: Fetch and process MedRxiv data
       run: |
