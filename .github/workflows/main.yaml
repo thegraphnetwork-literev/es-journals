@@ -16,7 +16,7 @@ env:
   SSL_VERIFY_MODE: certificate
   #
   ES_PORT: 9200
-  ES_HOSTNAME: http://localhost:9200
+  ES_HOSTNAME: http://127.0.0.1:9200
   ES_USERNAME: elastic
   ES_PASSWORD: worksfine
   ES_CERTIF: containers/esconfig/certs/http_ca.crt
@@ -81,9 +81,14 @@ jobs:
       run: |
         bash scripts/fetch_rxivx_data.sh medrxiv
 
-    - name: Count documents in MedRxiv index
-      run: |
-        makim develop.count-docs-in-index --index-name medrxiv
+    # - name: Count documents in MedRxiv index
+    #   run: |
+    #     makim develop.count-docs-in-index --index-name medrxiv
+
 
     - name: Run tests
       run: makim tests.unittest
+
+    - name: Setup tmate session
+      if: "${{ failure() }}"
+      uses: mxschmitt/action-tmate@v3
