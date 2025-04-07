@@ -9,7 +9,7 @@ on:
 env:
   ENV: dev
   # Elasticsearch Configuration
-  STACK_VERSION: 8.17.2
+  ES_STACK_VERSION: 8.17.2
   CLUSTER_NAME: docker-cluster
   MEM_LIMIT: 4g
   LICENSE: basic
