@@ -14,7 +14,7 @@ services:
         source: ${ES_HOST_VOLUME}
         target: /usr/share/elasticsearch/data
     ports:
-      - "${ES_PORT}:9200"
+      - "9200:9200"
     env_file: ../.env
     environment:
       - node.name=es01
