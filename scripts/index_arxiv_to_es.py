@@ -22,7 +22,7 @@ log_filename = (
     f"/tmp/elasticrxivx_{index_name_placeholder}_{time.strftime('%Y%m%d-%H%M%S')}.log"
 )
 
-ES_HOSTNAME = os.getenv("ES_HOSTNAME", "https://localhost:9200")
+ES_HOSTNAME = os.getenv("ES_HOSTNAME", "http://127.0.0.1:9200")
 ES_USERNAME = os.getenv("ES_USERNAME", "elastic")
 ES_PASSWORD = os.getenv("ES_PASSWORD", "")
 ES_CERTIF = os.getenv("ES_CERTIF", "")

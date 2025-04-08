@@ -9,14 +9,14 @@ on:
 env:
   ENV: dev
   # Elasticsearch Configuration
-  STACK_VERSION: 8.17.2
+  ES_STACK_VERSION: 8.17.2
   CLUSTER_NAME: docker-cluster
   MEM_LIMIT: 4g
   LICENSE: basic
   SSL_VERIFY_MODE: certificate
   #
   ES_PORT: 9200
-  ES_HOSTNAME: http://staging.literev.com:9200
+  ES_HOSTNAME: http://127.0.0.1:9200
   ES_USERNAME: elastic
   ES_PASSWORD: worksfine
   ES_CERTIF: containers/esconfig/certs/http_ca.crt
@@ -26,11 +26,11 @@ env:
   ES_HOST_VOLUME: /opt/services/data/elasticsearch/data
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     concurrency:
-      group: ci-${{ github.ref }}
+      group: ci-${{ github.event_name }}-${{ github.ref }}
       cancel-in-progress: true
 
     defaults:
@@ -38,52 +38,66 @@ jobs:
         shell: bash -l {0}
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-    - uses: mamba-org/setup-micromamba@v1
-      with:
-        miniconda-version: "latest"
-        mamba-version: "*"
-        environment-file: conda/base.yaml
-        channels: conda-forge,nodefaults
-        channel-priority: true
-        activate-environment: es-journals
-        use-mamba: true
-        miniforge-variant: Mambaforge
+      - name: Cache Conda Packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.conda/envs/es-journals
+          key: ubuntu-latest-conda-${{ hashFiles('conda/base.yaml') }}
+          restore-keys: |
+            ubuntu-latest-conda-
 
-    - name: Set Environment Variable
-      run: echo "GITHUB_PAT=${{ secrets.DEVTOOLS_PAT }}" >> $GITHUB_ENV
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          environment-file: conda/base.yaml
+          channels: conda-forge,nodefaults
+          activate-environment: es-journals
+          auto-update-conda: true
+          conda-solver: libmamba
 
-    - name: Create environment variables files
-      run: |
-        envsubst < .env.tpl > .env
+      - name: Set Environment Variable
+        run: echo "GITHUB_PAT=${{ secrets.DEVTOOLS_PAT }}" >> $GITHUB_ENV
 
-    - name: Check if poetry.lock is updated
-      run: poetry check
+      - name: Create environment variables files
+        run: |
+          envsubst < .env.tpl > .env
 
-    - name: Install dependencies
-      run: poetry install --no-root
+      - name: Check if poetry.lock is updated
+        run: poetry check
 
-    - name: Clean-up
-      run: makim clean.tmp
+      - name: Install dependencies
+        run: |
+          poetry config virtualenvs.create false
+          poetry install --no-root
 
-    - name: Setup development environment for Rxivs
-      run: |
-        for rxiv_name in biorxiv medrxiv; do
-            makim develop.setup-dev-env --index-name $rxiv_name
-        done
+      - name: Clean-up
+        run: makim clean.tmp
 
-    - name: Start Elasticsearch
-      run: |
-        sugar compose-ext start --options "-d"
+      - name: Setup development environment for Rxivs
+        run: |
+          for rxiv_name in biorxiv medrxiv; do
+              makim develop.setup-dev-env --index-name $rxiv_name
+          done
 
-    - name: Fetch and process MedRxiv data
-      run: |
-        bash scripts/fetch_rxivx_data.sh medrxiv
+      - name: Start Elasticsearch
+        run: |
+          sugar compose-ext start --options "-d"
 
-    - name: Count documents in MedRxiv index
-      run: |
-        makim develop.count-docs-in-index --index-name medrxiv
+      - name: Fetch and process MedRxiv data
+        run: |
+          bash scripts/fetch_rxivx_data.sh medrxiv
 
-    - name: Run tests
-      run: makim tests.unittest
+      # - name: Count documents in MedRxiv index
+      #   run: |
+      #     makim develop.count-docs-in-index --index-name medrxiv
+
+
+      - name: Run tests
+        run: makim tests.unittest
+
+      - name: Setup tmate session
+        if: "${{ failure() }}"
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 360

@@ -1,13 +1,14 @@
 services:
   es:
     container_name: es
-    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
-    user: "1000:1000" # Set the UID:GID to run the container
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ES_STACK_VERSION}
+    user: "${HOST_UID:-1000}:${HOST_UID:-1000}"
     env_file:
       - ../.env
     environment:
       - discovery.type=single-node
       - node.name=es
+      - "ES_JAVA_OPTS=-Xmx2g -Xmx2g"
       - ELASTIC_PASSWORD=${ES_PASSWORD}
       - ES_JAVA_OPTS=-Xms1g -Xmx1g  # Ensure proper memory allocation
       - bootstrap.memory_lock=true
