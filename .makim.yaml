@@ -194,3 +194,21 @@ groups:
           crontab -u devops $CRON_PATH
 
           echo "Cron jobs for LiteRev Elasticsearch have been set up successfully for user develop."
+
+  nginx:
+    tasks:
+      proxydomain:
+        help: Create SSL proxy configuration with CertBot for a domain
+        env-file: .env
+        run: |
+          python ./containers/nginx/scripts/generate_proxy_ui.py
+      generate-certificate:
+        help: Generate certificate
+        run: |
+          ./containers/nginx/scripts/generate-certificates.sh
+      setup:
+        hooks:
+          pre-run:
+            - task: clean.tmp
+            - task: nginx.proxydomain
+            - task: nginx.generate-certificate
