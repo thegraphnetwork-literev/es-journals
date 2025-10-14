@@ -99,7 +99,7 @@ ENV/
 .idea/
 
 # Containers
-containers/nginx/*
+containers/nginx/data/*
 
 # Databases
 **data/*
