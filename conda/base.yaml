@@ -1,21 +1,23 @@
+# conda/base.yaml
 name: es-journals
 channels:
-  - nodefaults
   - conda-forge
+  - nodefaults
 dependencies:
+  - python >=3.10,<3.13 # <-- was <13.3; pin to avoid 3.14
   - elasticsearch
   - loguru
-  - nodejs  # used by semantic-release
-  - python >=3.8.1,<13.3
+  - nodejs
   - pip
   - poetry
   - r-base
   - r-devtools
   - shellcheck
   - typer
+  - python-levenshtein # prebuilt from conda-forge; avoids pip build
+  - pytest
+  - tqdm
   - pip:
     - compose-go
-    - makim==1.20.0
-    - containers-sugar
-    - pytest
-    - tqdm
+    - makim>=1.27.0
+    - containers-sugar>=1.19.2

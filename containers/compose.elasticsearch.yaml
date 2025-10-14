@@ -3,44 +3,35 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
       - type: bind
-        source: ${NGINX_CONFIG}/certificates
-        target: /usr/share/elasticsearch/config/certs
-      - type: bind
         source: ../containers/init-scripts
         target: /usr/share/elasticsearch/init-scripts
         read_only: true
       - type: bind
+        source: ${HOST_ELASTIC_CERTS}
+        target: /usr/share/elasticsearch/config/letsencrypt/live/${CERTBOT_DOMAIN}/
+        read_only: true
+      - type: bind
         source: ${ES_HOST_VOLUME}
         target: /usr/share/elasticsearch/data
+    environment:
+      - node.name=es01
+      - cluster.name=docker-cluster
+      - discovery.type=single-node
+
+      - "xpack.security.enabled=true"
+      - "xpack.security.http.ssl.enabled=false"
+      - "xpack.security.transport.ssl.enabled=false"
+      - ELASTIC_PASSWORD=${ES_PASSWORD}
     ports:
       - "${ES_PORT}:9200"
     env_file: ../.env
-    environment:
-      - node.name=es01
-      - cluster.name=${CLUSTER_NAME}
-      - cluster.initial_master_nodes=${SEED_HOSTS}
-      - discovery.seed_hosts=${SEED_HOSTS}
-      - ES_PASSWORD=${ES_PASSWORD}
-      - bootstrap.memory_lock=true
-      - "xpack.security.enabled=true"
-      - "xpack.security.http.ssl.enabled=true"
-      - "xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/privkey.pem"
-      - "xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certs/fullchain.pem"
-      - "xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/chain.pem"
-      - "xpack.security.http.ssl.verification_mode=${SSL_VERIFY_MODE}"
-      - "xpack.security.transport.ssl.enabled=true"
-      - "xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certs/privkey.pem"
-      - "xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/fullchain.pem"
-      - "xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/chain.pem"
-      - "xpack.security.transport.ssl.verification_mode=${SSL_VERIFY_MODE}"
-      - "xpack.license.self_generated.type=${LICENSE}"
     mem_limit: ${MEM_LIMIT:-4g}
     ulimits:
       memlock:
         soft: -1
         hard: -1
     healthcheck:
-      test: ["CMD-SHELL", "curl -k -u elastic:$(cat /run/secrets/es_password) https://es01:9200/_cluster/health"]
+      test: ["CMD-SHELL", "curl -s -u elastic:${ES_PASSWORD} http://localhost:9200/_cluster/health || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 120
