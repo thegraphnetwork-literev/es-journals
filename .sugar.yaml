@@ -1,5 +1,5 @@
 backend: compose
-env-file: .env
+env-file: .envs/.env
 defaults:
   profile: ${{ env.SUGAR_ENV or env.ENV }}
   project-name: literev-es
@@ -7,22 +7,18 @@ defaults:
 profiles:
   prod:
     config-path:
-      # - containers/compose.nginx.yaml
       - containers/compose.elasticsearch.yaml
-    env-file: .env
+    env-file: .envs/.env
     services:
       default:
-        - es01-ssl
-        # - nginx
-        # - certbot
+        - es01
       available:
-        - name: es01-ssl
-        # - name: nginx
-        # - name: certbot
+        - name: es01
+
   dev:
     config-path:
       - containers/compose.elasticsearch.dev.yaml
-    env-file: .env
+    env-file: .envs/.env
     services:
       default:
        - es
@@ -31,7 +27,7 @@ profiles:
   staging:
     config-path:
       - containers/compose.elasticsearch.staging.yaml
-    env-file: .env
+    env-file: .envs/.env
     services:
       default:
         - es
@@ -41,8 +37,7 @@ profiles:
   nginx-prod:
     config-path:
       - containers/compose.nginx.yaml
-      # - containers/compose.elasticsearch.yaml
-    env-file: .env
+    env-file: .envs/.env
     services:
       default:
         - nginx

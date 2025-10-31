@@ -5,7 +5,7 @@ services:
     profiles: ["ssl"]
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     container_name: es01
-    env_file: ../.env
+    env_file: ../.envs/.env
     environment:
       - node.name=es01
       - cluster.name=${CLUSTER_NAME}
@@ -20,6 +20,7 @@ services:
       - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/live/es.literev.com/fullchain.pem
       - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certs/live/es.literev.com/privkey.pem
       - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/live/es.literev.com/chain.pem
+      - path.repo=/usr/share/elasticsearch/snapshots
       - ELASTIC_PASSWORD=${ES_PASSWORD}
     volumes:
       - certbot_conf:/usr/share/elasticsearch/config/certs:ro
@@ -37,6 +38,9 @@ volumes:
     driver: local
     name: es_legal_data_1
   certbot_conf:
+  es_snapshots:
+    driver: local
+    name: es_snapshots
 
 networks:
   elastic:

@@ -31,10 +31,10 @@ fi
 PATH_ROOT=$(pwd)
 
 # Source the environment variables
-if [ -f "$PATH_ROOT"/.env ]; then
-    source "$PATH_ROOT"/.env
+if [ -f "$PATH_ROOT"/.envs/.env ]; then
+    source "$PATH_ROOT"/.envs/.env
 else
-    echo ".env file not found"
+    echo ".envs/.env file not found"
     exit 1
 fi
 

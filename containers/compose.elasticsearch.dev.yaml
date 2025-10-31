@@ -5,7 +5,7 @@ services:
       - esdata:/usr/share/elasticsearch/data
     ports:
       - "${ES_PORT}:9200"
-    env_file: ../.envs/.elasticsearch.env
+    env_file: ../.envs/.envs/.elasticsearch.envs/.env
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=true
