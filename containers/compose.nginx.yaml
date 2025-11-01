@@ -33,9 +33,12 @@ services:
     restart: unless-stopped
 
 
+
 volumes:
   certbot_conf:
+    name: certbot_conf
   certbot_www:
+    name: certbot_www
 
 networks:
   elastic: {}

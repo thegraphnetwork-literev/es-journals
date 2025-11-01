@@ -38,9 +38,12 @@ volumes:
     driver: local
     name: es_legal_data_1
   certbot_conf:
+    name: certbot_conf
+  certbot_www:
+    name: certbot_www
   es_snapshots:
-    driver: local
     name: es_snapshots
+
 
 networks:
   elastic:
