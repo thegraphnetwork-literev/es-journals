@@ -106,7 +106,8 @@ containers/nginx/*
 **containers/elasticsearch/**
 
 # env vars
-.envs/.env*
+*.env
+.envs/*
 
 # certificates
 *.pem
