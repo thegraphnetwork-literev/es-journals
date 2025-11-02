@@ -8,7 +8,7 @@ from pathlib import Path
 
 # Load environment variables
 env_dir = Path(__file__).resolve().parent.parent
-load_dotenv(env_dir / ".env")
+load_dotenv(env_dir / ".envs/.env")
 
 ES_HOSTNAME = os.getenv("ES_HOSTNAME", "https://localhost:9200")
 ES_USERNAME = os.getenv("ES_USERNAME", "elastic")

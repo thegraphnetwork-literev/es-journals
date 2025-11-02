@@ -1,32 +1,46 @@
+version: "3.9"
+
 services:
   nginx:
     build:
       context: ".."
-      dockerfile: "containers/dockerfile.nginx" # Relative path
+      dockerfile: "containers/dockerfile.nginx"
       args:
-        HOST_UID: ${HOST_UID}
-        HOST_GID: ${HOST_GID}
+        HOST_UID: "${HOST_UID}"
+        HOST_GID: "${HOST_GID}"
     env_file:
-      - ../.env
+      - ../.envs/.env
     container_name: nginx
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ${NGINX_CONFIG}:/etc/nginx # Relative path
-      - ${NGINX_CONFIG}/certbot/conf:/etc/nginx/letsencrypt
-    networks:
-      - elastic
+      - ../containers/nginx/data/config/prod:/etc/nginx/conf.d
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot    
+    networks: [literev]
+    restart: unless-stopped
 
   certbot:
     image: certbot/certbot
     container_name: certbot
     volumes:
-      - ${NGINX_CONFIG}/certbot/conf:/etc/letsencrypt
-      - ${NGINX_CONFIG}/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-    networks:
-      - elastic
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: >
+      /bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'
+    networks: [literev]
+    restart: unless-stopped
+
+
+
+volumes:
+  certbot_conf:
+    name: certbot_conf
+  certbot_www:
+    name: certbot_www
 
 networks:
-  elastic:
+  literev: {}
+
+

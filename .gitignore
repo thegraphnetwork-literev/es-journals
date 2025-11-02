@@ -78,7 +78,7 @@ celerybeat-schedule
 *.sage.py
 
 # dotenv
-.env
+.envs/.env
 
 # virtualenv
 .venv
@@ -106,7 +106,8 @@ containers/nginx/*
 **containers/elasticsearch/**
 
 # env vars
-.env*
+*.env
+.envs/*
 
 # certificates
 *.pem

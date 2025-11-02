@@ -1,46 +1,50 @@
+version: "3.9"
+
 services:
-  es01:
+  es:
+    profiles: ["ssl"]
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    container_name: es
+    env_file:
+      - ../.envs/.env
+    environment:
+      - node.name=es
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certs/live/es.literev.com/fullchain.pem
+      - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/live/es.literev.com/privkey.pem
+      - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/live/es.literev.com/chain.pem
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/live/es.literev.com/fullchain.pem
+      - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certs/live/es.literev.com/privkey.pem
+      - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/live/es.literev.com/chain.pem
+      - path.repo=/usr/share/elasticsearch/snapshots
+      - ELASTIC_PASSWORD=${ES_PASSWORD}
     volumes:
-      - type: bind
-        source: ${NGINX_CONFIG}/certificates
-        target: /usr/share/elasticsearch/config/certs
-      - type: bind
-        source: ../containers/init-scripts
-        target: /usr/share/elasticsearch/init-scripts
-        read_only: true
-      - type: bind
-        source: ${ES_HOST_VOLUME}
-        target: /usr/share/elasticsearch/data
+      - certbot_conf:/usr/share/elasticsearch/config/certs:ro
+      - esdata:/usr/share/elasticsearch/data
+      - es_snapshots:/usr/share/elasticsearch/snapshots
     ports:
       - "${ES_PORT}:9200"
-    env_file: ../.env
-    environment:
-      - node.name=es01
-      - cluster.name=${CLUSTER_NAME}
-      - cluster.initial_master_nodes=${SEED_HOSTS}
-      - discovery.seed_hosts=${SEED_HOSTS}
-      - ES_PASSWORD=${ES_PASSWORD}
-      - bootstrap.memory_lock=true
-      - "xpack.security.enabled=true"
-      - "xpack.security.http.ssl.enabled=true"
-      - "xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/privkey.pem"
-      - "xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certs/fullchain.pem"
-      - "xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/chain.pem"
-      - "xpack.security.http.ssl.verification_mode=${SSL_VERIFY_MODE}"
-      - "xpack.security.transport.ssl.enabled=true"
-      - "xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certs/privkey.pem"
-      - "xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/fullchain.pem"
-      - "xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/chain.pem"
-      - "xpack.security.transport.ssl.verification_mode=${SSL_VERIFY_MODE}"
-      - "xpack.license.self_generated.type=${LICENSE}"
-    mem_limit: ${MEM_LIMIT:-4g}
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+    networks: [literev]
     healthcheck:
-      test: ["CMD-SHELL", "curl -k -u elastic:$(cat /run/secrets/es_password) https://es01:9200/_cluster/health"]
-      interval: 10s
-      timeout: 10s
-      retries: 120
+      test: ["CMD-SHELL", "curl -kfSs -u elastic:${ES_PASSWORD} https://es01:9200/_cluster/health || exit 1"]
+
+
+volumes:
+  esdata:
+    driver: local
+    name: es_data
+  certbot_conf:
+    name: certbot_conf
+  certbot_www:
+    name: certbot_www
+  es_snapshots:
+    name: es_snapshots
+
+
+networks:
+  literev:

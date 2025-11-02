@@ -56,7 +56,7 @@ jobs:
 
     - name: Create environment variables files
       run: |
-        envsubst < .env.tpl > .env
+        envsubst < .envs/.env.tpl > .envs/.env
 
     - name: Check if poetry.lock is updated
       run: poetry check

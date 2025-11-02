@@ -1,34 +1,34 @@
 services:
-  es:
+  es01-dev:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
-    container_name: es
-    user: "1000:1000"
+    volumes:
+      - esdata_dev:/usr/share/elasticsearch/data
+    ports:
+      - "${ES_PORT}:9200"
     env_file:
-      ../.env
+      - ../.envs/.env
     environment:
-      - node.name=es
       - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - bootstrap.memory_lock=false
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
       - ELASTIC_PASSWORD=${ES_PASSWORD}
+    mem_limit: ${MEM_LIMIT:-4g}
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
+    healthcheck:
+      test: ["CMD-SHELL", "curl -k -u elastic:${ES_PASSWORD} http://localhost:9200/_cluster/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
     networks:
-      - elastic
-
-
-volumes:
-  esdata:
-    driver: local
-    name: es_data
+      - literev
 
 networks:
-  elastic:
+  literev:
     driver: bridge
-    name: elastic_dev_xnet
+
+volumes:
+  esdata_dev:
