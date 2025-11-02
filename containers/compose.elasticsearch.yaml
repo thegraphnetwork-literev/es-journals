@@ -5,7 +5,8 @@ services:
     profiles: ["ssl"]
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     container_name: es01
-    env_file: ../.envs/.env
+    env_file:
+      - ../.envs/.env
     environment:
       - node.name=es01
       - cluster.name=${CLUSTER_NAME}
@@ -28,7 +29,7 @@ services:
       - es_snapshots:/usr/share/elasticsearch/snapshots
     ports:
       - "${ES_PORT}:9200"
-    networks: [elastic]
+    networks: [literev]
     healthcheck:
       test: ["CMD-SHELL", "curl -kfSs -u elastic:${ES_PASSWORD} https://es01:9200/_cluster/health || exit 1"]
 
@@ -36,7 +37,7 @@ services:
 volumes:
   esdata1:
     driver: local
-    name: es_legal_data_1
+    name: es_data_1
   certbot_conf:
     name: certbot_conf
   certbot_www:
@@ -46,4 +47,4 @@ volumes:
 
 
 networks:
-  elastic:
+  literev:
