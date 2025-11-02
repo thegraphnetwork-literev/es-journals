@@ -1,14 +1,14 @@
 version: "3.9"
 
 services:
-  es01:
+  es:
     profiles: ["ssl"]
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
-    container_name: es01
+    container_name: es
     env_file:
       - ../.envs/.env
     environment:
-      - node.name=es01
+      - node.name=es
       - cluster.name=${CLUSTER_NAME}
       - discovery.type=single-node
       - bootstrap.memory_lock=true
@@ -25,7 +25,7 @@ services:
       - ELASTIC_PASSWORD=${ES_PASSWORD}
     volumes:
       - certbot_conf:/usr/share/elasticsearch/config/certs:ro
-      - esdata1:/usr/share/elasticsearch/data
+      - esdata:/usr/share/elasticsearch/data
       - es_snapshots:/usr/share/elasticsearch/snapshots
     ports:
       - "${ES_PORT}:9200"
@@ -35,9 +35,9 @@ services:
 
 
 volumes:
-  esdata1:
+  esdata:
     driver: local
-    name: es_data_1
+    name: es_data
   certbot_conf:
     name: certbot_conf
   certbot_www:

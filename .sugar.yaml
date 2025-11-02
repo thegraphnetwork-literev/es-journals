@@ -11,9 +11,9 @@ profiles:
     env-file: .envs/.env
     services:
       default:
-        - es01
+        - es
       available:
-        - name: es01
+        - name: es
 
   dev:
     config-path:
@@ -21,9 +21,10 @@ profiles:
     env-file: .envs/.env
     services:
       default:
-       - es
+       - es01-dev
       available:
-        - name: es
+        - name: es01-dev
+
   staging:
     config-path:
       - containers/compose.elasticsearch.staging.yaml

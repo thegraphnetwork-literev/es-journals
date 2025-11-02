@@ -2,7 +2,7 @@ services:
   es01-dev:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
-      - esdata:/usr/share/elasticsearch/data
+      - esdata_dev:/usr/share/elasticsearch/data
     ports:
       - "${ES_PORT}:9200"
     env_file:
@@ -31,4 +31,4 @@ networks:
     driver: bridge
 
 volumes:
-  esdata:
+  esdata_dev:
